@@ -1,0 +1,86 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Tecnico {
+  id    String @id @default(uuid())
+  email String @unique
+  senha String
+  nome  String
+
+  revisoes Revisao[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Child {
+  id             String   @id
+  nome           String
+  dataNascimento DateTime
+  bairro         String
+  responsavel    String
+  telefone       String
+
+  saude             Saude?
+  educacao          Educacao?
+  assistenciaSocial AssistenciaSocial?
+  revisoes          Revisao[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Saude {
+  id              String    @id @default(uuid())
+  childId         String    @unique
+  cartaoSus       String?
+  ultimaConsulta  DateTime?
+  vacinasEmDia    Boolean   @default(true)
+  alertas         String[]
+  temAlerta       Boolean   @default(false)
+
+  child Child @relation(fields: [childId], references: [id], onDelete: Cascade)
+}
+
+model Educacao {
+  id                   String  @id @default(uuid())
+  childId              String  @unique
+  escola               String?
+  serie                String?
+  frequenciaPercentual Float?
+  alertas              String[]
+  temAlerta            Boolean @default(false)
+
+  child Child @relation(fields: [childId], references: [id], onDelete: Cascade)
+}
+
+model AssistenciaSocial {
+  id               String   @id @default(uuid())
+  childId          String   @unique
+  nis              String?
+  beneficios       String[]
+  statusBeneficios String?
+  alertas          String[]
+  temAlerta        Boolean  @default(false)
+
+  child Child @relation(fields: [childId], references: [id], onDelete: Cascade)
+}
+
+model Revisao {
+  id        String   @id @default(uuid())
+  childId   String
+  tecnicoId String
+  criadoEm  DateTime @default(now())
+
+  child   Child   @relation(fields: [childId], references: [id], onDelete: Cascade)
+  tecnico Tecnico @relation(fields: [tecnicoId], references: [id])
+}

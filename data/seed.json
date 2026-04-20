@@ -1,0 +1,532 @@
+[
+  {
+    "id": "c001",
+    "nome": "Ana Clara Silva",
+    "data_nascimento": "2015-03-15",
+    "bairro": "Madureira",
+    "responsavel": "Maria da Silva",
+    "telefone": "(21) 98765-4321",
+    "saude": {
+      "cartao_sus": "123 4567 8901 2345",
+      "ultima_consulta": "2023-08-10",
+      "vacinas_em_dia": false,
+      "alertas": ["Vacinas atrasadas: Hepatite A, HPV"]
+    },
+    "educacao": {
+      "escola": "CIEP 301 Brizolão",
+      "serie": "4º ano EF",
+      "frequencia_percentual": 62,
+      "alertas": ["Frequência abaixo de 75%: 62%"]
+    },
+    "assistencia_social": {
+      "nis": "12345678901",
+      "beneficios": ["Bolsa Família"],
+      "status_beneficios": "ativo",
+      "alertas": []
+    }
+  },
+  {
+    "id": "c002",
+    "nome": "Pedro Henrique Souza",
+    "data_nascimento": "2018-07-22",
+    "bairro": "Complexo do Alemão",
+    "responsavel": "João Souza",
+    "telefone": "(21) 97654-3210",
+    "saude": {
+      "cartao_sus": "234 5678 9012 3456",
+      "ultima_consulta": "2022-12-01",
+      "vacinas_em_dia": false,
+      "alertas": ["Consulta não realizada há mais de 12 meses", "Vacinas atrasadas: Pentavalente, Poliomielite"]
+    },
+    "educacao": {
+      "escola": "EM Elis Regina",
+      "serie": "1º ano EF",
+      "frequencia_percentual": 55,
+      "alertas": ["Frequência abaixo de 75%: 55%", "3 faltas injustificadas consecutivas"]
+    },
+    "assistencia_social": {
+      "nis": "23456789012",
+      "beneficios": ["Bolsa Família", "Cesta Básica"],
+      "status_beneficios": "suspenso",
+      "alertas": ["Benefício Bolsa Família suspenso por inconsistência cadastral"]
+    }
+  },
+  {
+    "id": "c003",
+    "nome": "Luiza Santos",
+    "data_nascimento": "2014-11-08",
+    "bairro": "Rocinha",
+    "responsavel": "Fernanda Santos",
+    "telefone": "(21) 96543-2109",
+    "saude": {
+      "cartao_sus": "345 6789 0123 4567",
+      "ultima_consulta": "2024-02-15",
+      "vacinas_em_dia": true,
+      "alertas": []
+    },
+    "educacao": null,
+    "assistencia_social": null
+  },
+  {
+    "id": "c004",
+    "nome": "Gabriel Oliveira",
+    "data_nascimento": "2017-04-30",
+    "bairro": "Bangu",
+    "responsavel": "Carla Oliveira",
+    "telefone": "(21) 95432-1098",
+    "saude": null,
+    "educacao": {
+      "escola": "EM Santos Dumont",
+      "serie": "2º ano EF",
+      "frequencia_percentual": 58,
+      "alertas": ["Frequência abaixo de 75%: 58%"]
+    },
+    "assistencia_social": null
+  },
+  {
+    "id": "c005",
+    "nome": "Mariana Costa",
+    "data_nascimento": "2015-09-12",
+    "bairro": "Campo Grande",
+    "responsavel": "Paulo Costa",
+    "telefone": "(21) 94321-0987",
+    "saude": null,
+    "educacao": null,
+    "assistencia_social": {
+      "nis": "45678901234",
+      "beneficios": ["Bolsa Família"],
+      "status_beneficios": "cancelado",
+      "alertas": ["Benefício cancelado por descumprimento de condicionalidades"]
+    }
+  },
+  {
+    "id": "c006",
+    "nome": "Carlos Eduardo Lima",
+    "data_nascimento": "2019-01-20",
+    "bairro": "Santa Cruz",
+    "responsavel": "Ana Lima",
+    "telefone": "(21) 93210-9876",
+    "saude": null,
+    "educacao": null,
+    "assistencia_social": null
+  },
+  {
+    "id": "c007",
+    "nome": "Beatriz Ferreira",
+    "data_nascimento": "2013-06-05",
+    "bairro": "Realengo",
+    "responsavel": "Roberto Ferreira",
+    "telefone": "(21) 92109-8765",
+    "saude": {
+      "cartao_sus": "567 8901 2345 6789",
+      "ultima_consulta": "2024-01-20",
+      "vacinas_em_dia": true,
+      "alertas": []
+    },
+    "educacao": {
+      "escola": "CIEP 350",
+      "serie": "6º ano EF",
+      "frequencia_percentual": 68,
+      "alertas": ["Frequência abaixo de 75%: 68%"]
+    },
+    "assistencia_social": null
+  },
+  {
+    "id": "c008",
+    "nome": "Rafael Almeida",
+    "data_nascimento": "2016-12-18",
+    "bairro": "Jacarepaguá",
+    "responsavel": "Sonia Almeida",
+    "telefone": "(21) 91098-7654",
+    "saude": {
+      "cartao_sus": "678 9012 3456 7890",
+      "ultima_consulta": "2023-09-05",
+      "vacinas_em_dia": false,
+      "alertas": ["Vacinas atrasadas: Febre Amarela, Varicela"]
+    },
+    "educacao": null,
+    "assistencia_social": {
+      "nis": "67890123456",
+      "beneficios": ["Bolsa Família"],
+      "status_beneficios": "ativo",
+      "alertas": []
+    }
+  },
+  {
+    "id": "c009",
+    "nome": "Leticia Rodrigues",
+    "data_nascimento": "2015-05-27",
+    "bairro": "Pavuna",
+    "responsavel": "Marcos Rodrigues",
+    "telefone": "(21) 90987-6543",
+    "saude": {
+      "cartao_sus": "789 0123 4567 8901",
+      "ultima_consulta": "2024-03-10",
+      "vacinas_em_dia": true,
+      "alertas": []
+    },
+    "educacao": {
+      "escola": "EM Graciliano Ramos",
+      "serie": "4º ano EF",
+      "frequencia_percentual": 91,
+      "alertas": []
+    },
+    "assistencia_social": {
+      "nis": "78901234567",
+      "beneficios": ["Bolsa Família", "Benefício de Prestação Continuada"],
+      "status_beneficios": "ativo",
+      "alertas": []
+    }
+  },
+  {
+    "id": "c010",
+    "nome": "Diego Lima",
+    "data_nascimento": "2017-08-14",
+    "bairro": "Vigário Geral",
+    "responsavel": "Claudia Lima",
+    "telefone": "(21) 89876-5432",
+    "saude": {
+      "cartao_sus": "890 1234 5678 9012",
+      "ultima_consulta": "2022-06-20",
+      "vacinas_em_dia": false,
+      "alertas": ["Consulta não realizada há mais de 18 meses", "Vacinas atrasadas: DTP, Poliomielite, Febre Amarela"]
+    },
+    "educacao": {
+      "escola": "EM João Pessoa",
+      "serie": "2º ano EF",
+      "frequencia_percentual": 45,
+      "alertas": ["Frequência crítica abaixo de 50%: 45%", "Risco de reprovação por falta"]
+    },
+    "assistencia_social": {
+      "nis": "89012345678",
+      "beneficios": ["Bolsa Família"],
+      "status_beneficios": "suspenso",
+      "alertas": ["Benefício suspenso", "Família em situação de vulnerabilidade extrema"]
+    }
+  },
+  {
+    "id": "c011",
+    "nome": "Fernanda Nascimento",
+    "data_nascimento": "2014-02-09",
+    "bairro": "Guadalupe",
+    "responsavel": "Lúcia Nascimento",
+    "telefone": "(21) 88765-4321",
+    "saude": null,
+    "educacao": {
+      "escola": "EM Carmela Dutra",
+      "serie": "5º ano EF",
+      "frequencia_percentual": 70,
+      "alertas": ["Frequência abaixo de 75%: 70%"]
+    },
+    "assistencia_social": {
+      "nis": "90123456789",
+      "beneficios": ["Bolsa Família"],
+      "status_beneficios": "suspenso",
+      "alertas": ["Benefício suspenso — pendência documental"]
+    }
+  },
+  {
+    "id": "c012",
+    "nome": "Matheus Carvalho",
+    "data_nascimento": "2018-10-03",
+    "bairro": "Acari",
+    "responsavel": "Edson Carvalho",
+    "telefone": "(21) 87654-3210",
+    "saude": {
+      "cartao_sus": "012 3456 7890 1234",
+      "ultima_consulta": "2024-01-08",
+      "vacinas_em_dia": true,
+      "alertas": []
+    },
+    "educacao": {
+      "escola": "EM Rivadávia Corrêa",
+      "serie": "1º ano EF",
+      "frequencia_percentual": 88,
+      "alertas": []
+    },
+    "assistencia_social": null
+  },
+  {
+    "id": "c013",
+    "nome": "Isabela Martins",
+    "data_nascimento": "2012-07-16",
+    "bairro": "Anchieta",
+    "responsavel": "Vera Martins",
+    "telefone": "(21) 86543-2109",
+    "saude": {
+      "cartao_sus": "123 4567 8901 2346",
+      "ultima_consulta": "2023-03-22",
+      "vacinas_em_dia": false,
+      "alertas": ["Vacinas atrasadas: HPV, Meningocócica C", "Consulta há mais de 12 meses"]
+    },
+    "educacao": null,
+    "assistencia_social": null
+  },
+  {
+    "id": "c014",
+    "nome": "Thiago Pereira",
+    "data_nascimento": "2016-05-29",
+    "bairro": "Cosmos",
+    "responsavel": "Helena Pereira",
+    "telefone": "(21) 85432-1098",
+    "saude": {
+      "cartao_sus": "234 5678 9012 3457",
+      "ultima_consulta": "2024-02-28",
+      "vacinas_em_dia": true,
+      "alertas": []
+    },
+    "educacao": {
+      "escola": "EM Manoel de Abreu",
+      "serie": "3º ano EF",
+      "frequencia_percentual": 71,
+      "alertas": ["Frequência abaixo de 75%: 71%"]
+    },
+    "assistencia_social": {
+      "nis": "12345098765",
+      "beneficios": ["Bolsa Família"],
+      "status_beneficios": "ativo",
+      "alertas": []
+    }
+  },
+  {
+    "id": "c015",
+    "nome": "Camila Souza",
+    "data_nascimento": "2017-11-11",
+    "bairro": "Padre Miguel",
+    "responsavel": "Antônio Souza",
+    "telefone": "(21) 84321-0987",
+    "saude": null,
+    "educacao": null,
+    "assistencia_social": null
+  },
+  {
+    "id": "c016",
+    "nome": "Lucas Barbosa",
+    "data_nascimento": "2014-04-02",
+    "bairro": "Madureira",
+    "responsavel": "Rosana Barbosa",
+    "telefone": "(21) 83210-9876",
+    "saude": {
+      "cartao_sus": "345 6789 0123 4568",
+      "ultima_consulta": "2024-01-30",
+      "vacinas_em_dia": true,
+      "alertas": []
+    },
+    "educacao": null,
+    "assistencia_social": {
+      "nis": "23456109876",
+      "beneficios": ["Bolsa Família"],
+      "status_beneficios": "suspenso",
+      "alertas": ["Benefício suspenso por desatualização cadastral"]
+    }
+  },
+  {
+    "id": "c017",
+    "nome": "Vitoria Gomes",
+    "data_nascimento": "2015-08-23",
+    "bairro": "Complexo do Alemão",
+    "responsavel": "Sandra Gomes",
+    "telefone": "(21) 82109-8765",
+    "saude": {
+      "cartao_sus": "456 7890 1234 5679",
+      "ultima_consulta": "2023-05-14",
+      "vacinas_em_dia": false,
+      "alertas": ["Vacinas atrasadas: Varicela, HPV"]
+    },
+    "educacao": {
+      "escola": "CIEP 375",
+      "serie": "4º ano EF",
+      "frequencia_percentual": 82,
+      "alertas": []
+    },
+    "assistencia_social": null
+  },
+  {
+    "id": "c018",
+    "nome": "Enzo Santos",
+    "data_nascimento": "2018-01-17",
+    "bairro": "Rocinha",
+    "responsavel": "Patricia Santos",
+    "telefone": "(21) 81098-7654",
+    "saude": {
+      "cartao_sus": "567 8901 2345 6790",
+      "ultima_consulta": "2024-03-05",
+      "vacinas_em_dia": true,
+      "alertas": []
+    },
+    "educacao": {
+      "escola": "EM Afrânio Peixoto",
+      "serie": "1º ano EF",
+      "frequencia_percentual": 94,
+      "alertas": []
+    },
+    "assistencia_social": {
+      "nis": "34567210987",
+      "beneficios": ["Bolsa Família"],
+      "status_beneficios": "ativo",
+      "alertas": []
+    }
+  },
+  {
+    "id": "c019",
+    "nome": "Sophia Lima",
+    "data_nascimento": "2013-09-07",
+    "bairro": "Bangu",
+    "responsavel": "Jorge Lima",
+    "telefone": "(21) 80987-6543",
+    "saude": null,
+    "educacao": {
+      "escola": "EM Deodoro",
+      "serie": "6º ano EF",
+      "frequencia_percentual": 85,
+      "alertas": []
+    },
+    "assistencia_social": null
+  },
+  {
+    "id": "c020",
+    "nome": "Arthur Oliveira",
+    "data_nascimento": "2016-03-25",
+    "bairro": "Campo Grande",
+    "responsavel": "Fabiana Oliveira",
+    "telefone": "(21) 79876-5432",
+    "saude": {
+      "cartao_sus": "678 9012 3456 7891",
+      "ultima_consulta": "2023-07-11",
+      "vacinas_em_dia": false,
+      "alertas": ["Vacinas atrasadas: DTP Reforço", "Consulta há mais de 9 meses"]
+    },
+    "educacao": null,
+    "assistencia_social": {
+      "nis": "45678321098",
+      "beneficios": ["Bolsa Família"],
+      "status_beneficios": "ativo",
+      "alertas": []
+    }
+  },
+  {
+    "id": "c021",
+    "nome": "Alice Ferreira",
+    "data_nascimento": "2017-06-13",
+    "bairro": "Santa Cruz",
+    "responsavel": "Ronaldo Ferreira",
+    "telefone": "(21) 78765-4321",
+    "saude": {
+      "cartao_sus": "789 0123 4567 8902",
+      "ultima_consulta": "2023-11-20",
+      "vacinas_em_dia": false,
+      "alertas": ["Vacinas atrasadas: Poliomielite"]
+    },
+    "educacao": {
+      "escola": "EM Poeta Gonçalves Dias",
+      "serie": "2º ano EF",
+      "frequencia_percentual": 80,
+      "alertas": []
+    },
+    "assistencia_social": {
+      "nis": "56789432109",
+      "beneficios": ["Bolsa Família"],
+      "status_beneficios": "ativo",
+      "alertas": []
+    }
+  },
+  {
+    "id": "c022",
+    "nome": "Benjamin Costa",
+    "data_nascimento": "2015-12-04",
+    "bairro": "Realengo",
+    "responsavel": "Marcela Costa",
+    "telefone": "(21) 77654-3210",
+    "saude": {
+      "cartao_sus": "890 1234 5678 9013",
+      "ultima_consulta": "2024-02-01",
+      "vacinas_em_dia": true,
+      "alertas": []
+    },
+    "educacao": {
+      "escola": "EM Venceslau Brás",
+      "serie": "4º ano EF",
+      "frequencia_percentual": 65,
+      "alertas": ["Frequência abaixo de 75%: 65%", "Notificação enviada ao responsável"]
+    },
+    "assistencia_social": {
+      "nis": "67890543210",
+      "beneficios": ["Bolsa Família"],
+      "status_beneficios": "ativo",
+      "alertas": []
+    }
+  },
+  {
+    "id": "c023",
+    "nome": "Emily Rodrigues",
+    "data_nascimento": "2014-10-19",
+    "bairro": "Jacarepaguá",
+    "responsavel": "Silvia Rodrigues",
+    "telefone": "(21) 76543-2109",
+    "saude": {
+      "cartao_sus": "901 2345 6789 0124",
+      "ultima_consulta": "2022-04-15",
+      "vacinas_em_dia": false,
+      "alertas": ["Consulta não realizada há mais de 24 meses", "Vacinas atrasadas: HPV, Meningocócica ACWY, dTpa"]
+    },
+    "educacao": {
+      "escola": "EM Afonso Pena",
+      "serie": "5º ano EF",
+      "frequencia_percentual": 50,
+      "alertas": ["Frequência crítica: 50%", "Conselho Tutelar notificado"]
+    },
+    "assistencia_social": {
+      "nis": "78901654321",
+      "beneficios": ["Bolsa Família", "Cesta Básica"],
+      "status_beneficios": "cancelado",
+      "alertas": ["Benefício cancelado", "Família em acompanhamento prioritário CRAS"]
+    }
+  },
+  {
+    "id": "c024",
+    "nome": "Nicolas Alves",
+    "data_nascimento": "2016-02-08",
+    "bairro": "Pavuna",
+    "responsavel": "Tatiana Alves",
+    "telefone": "(21) 75432-1098",
+    "saude": null,
+    "educacao": {
+      "escola": "EM Presidente Vargas",
+      "serie": "3º ano EF",
+      "frequencia_percentual": 79,
+      "alertas": []
+    },
+    "assistencia_social": {
+      "nis": "89012765432",
+      "beneficios": ["Bolsa Família"],
+      "status_beneficios": "suspenso",
+      "alertas": ["Benefício suspenso — atualização cadastral pendente"]
+    }
+  },
+  {
+    "id": "c025",
+    "nome": "Valentina Carvalho",
+    "data_nascimento": "2018-05-31",
+    "bairro": "Vigário Geral",
+    "responsavel": "Denise Carvalho",
+    "telefone": "(21) 74321-0987",
+    "saude": {
+      "cartao_sus": "012 3456 7890 1235",
+      "ultima_consulta": "2023-06-10",
+      "vacinas_em_dia": false,
+      "alertas": ["Vacinas atrasadas: Pentavalente, Pneumocócica"]
+    },
+    "educacao": {
+      "escola": "EM Santos Anjos",
+      "serie": "1º ano EF",
+      "frequencia_percentual": 66,
+      "alertas": ["Frequência abaixo de 75%: 66%"]
+    },
+    "assistencia_social": {
+      "nis": "90123876543",
+      "beneficios": ["Bolsa Família"],
+      "status_beneficios": "ativo",
+      "alertas": []
+    }
+  }
+]

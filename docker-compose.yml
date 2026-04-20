@@ -1,0 +1,54 @@
+version: '3.9'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: painel_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: painel_db
+      POSTGRES_USER: painel_user
+      POSTGRES_PASSWORD: painel_pass
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U painel_user -d painel_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    ports:
+      - "5432:5432"
+
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: painel_backend
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://painel_user:painel_pass@postgres:5432/painel_db
+      JWT_SECRET: painel-jwt-secret-2024-prefeitura
+      PORT: 3001
+      NODE_ENV: production
+    ports:
+      - "3001:3001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    container_name: painel_frontend
+    restart: unless-stopped
+    environment:
+      BACKEND_URL: http://backend:3001
+      NODE_ENV: production
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
