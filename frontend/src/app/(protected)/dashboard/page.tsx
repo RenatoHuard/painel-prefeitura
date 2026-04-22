@@ -6,6 +6,7 @@ import type { Summary } from '@/types'
 import { SummaryCards } from '@/components/dashboard/SummaryCards'
 import { AlertsChart } from '@/components/dashboard/AlertsChart'
 import { BairroChart } from '@/components/dashboard/BairroChart'
+import { MapaCalor } from '@/components/dashboard/MapaCalor'
 import { Loader2 } from 'lucide-react'
 
 export default function DashboardPage() {
@@ -53,6 +54,8 @@ export default function DashboardPage() {
         <AlertsChart summary={summary} />
         <BairroChart summary={summary} />
       </div>
+
+      <MapaCalor summary={summary} />
     </div>
   )
 }
