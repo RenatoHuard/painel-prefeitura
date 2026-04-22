@@ -1,28 +1,27 @@
 'use client'
 
 import { useEffect } from 'react'
-import { MapContainer, TileLayer, GeoJSON, Tooltip } from 'react-leaflet'
+import { MapContainer, TileLayer, GeoJSON } from 'react-leaflet'
 import type { Layer, PathOptions } from 'leaflet'
-import 'leaflet/dist/leaflet.css'
+// CSS carregado via CDN no layout.tsx — não importar aqui
 import type { Summary } from '@/types'
 import { RIO_BAIRROS_GEOJSON } from '@/lib/rioGeoJson'
 
 interface Props { summary: Summary }
 
-// Escala de cor baseada na intensidade de alertas
 function getColor(alertas: number, total: number): string {
-  if (total === 0) return '#334155' // sem dados
+  if (total === 0) return '#334155'
   const pct = alertas / total
-  if (pct === 0)    return '#166534' // verde escuro — sem alertas
-  if (pct <= 0.25)  return '#15803d' // verde
-  if (pct <= 0.50)  return '#ca8a04' // amarelo
-  if (pct <= 0.75)  return '#ea580c' // laranja
-  return '#dc2626'                    // vermelho — crítico
+  if (pct === 0)   return '#166534'
+  if (pct <= 0.25) return '#15803d'
+  if (pct <= 0.50) return '#ca8a04'
+  if (pct <= 0.75) return '#ea580c'
+  return '#dc2626'
 }
 
 export default function MapaCalorCliente({ summary }: Props) {
-  // Fix do ícone padrão do Leaflet (problema conhecido com bundlers)
   useEffect(() => {
+    // Fix ícone padrão do Leaflet com bundlers
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const L = require('leaflet')
     delete L.Icon.Default.prototype._getIconUrl
@@ -33,7 +32,6 @@ export default function MapaCalorCliente({ summary }: Props) {
     })
   }, [])
 
-  // Monta lookup: bairro → dados
   const bairroMap = new Map(
     summary.porBairro.map((b) => [
       b.bairro.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ''),
@@ -62,9 +60,9 @@ export default function MapaCalorCliente({ summary }: Props) {
     const dados = getBairroData(nome)
     const pct = dados.total > 0 ? Math.round((dados.comAlertas / dados.total) * 100) : 0
 
-    // @ts-expect-error — Leaflet Layer tem bindTooltip em runtime
-    layer.bindTooltip(
-      `<div style="font-family:sans-serif;font-size:12px;padding:4px 8px">
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ;(layer as any).bindTooltip(
+      `<div style="font-family:sans-serif;font-size:12px;padding:4px 8px;line-height:1.5">
         <strong>${nome}</strong><br/>
         ${dados.total} criança${dados.total !== 1 ? 's' : ''}<br/>
         ${dados.comAlertas} com alerta${dados.comAlertas !== 1 ? 's' : ''} (${pct}%)
@@ -86,7 +84,7 @@ export default function MapaCalorCliente({ summary }: Props) {
     <div className="bg-card border border-border rounded-xl p-5">
       <h2 className="font-semibold text-card-foreground mb-1">Mapa de Calor por Bairro</h2>
       <p className="text-xs text-muted-foreground mb-4">
-        Intensidade de alertas por bairro — passe o mouse sobre o bairro para ver os detalhes
+        Passe o mouse sobre o bairro para ver os detalhes
       </p>
 
       <div className="rounded-lg overflow-hidden" style={{ height: '360px' }}>
@@ -94,7 +92,6 @@ export default function MapaCalorCliente({ summary }: Props) {
           center={[-22.900, -43.450]}
           zoom={11}
           style={{ height: '100%', width: '100%' }}
-          zoomControl={true}
           scrollWheelZoom={false}
         >
           <TileLayer
@@ -110,14 +107,10 @@ export default function MapaCalorCliente({ summary }: Props) {
         </MapContainer>
       </div>
 
-      {/* Legenda */}
       <div className="flex flex-wrap gap-3 mt-4">
         {escala.map((item) => (
           <div key={item.label} className="flex items-center gap-1.5">
-            <span
-              className="w-3.5 h-3.5 rounded-sm flex-shrink-0"
-              style={{ backgroundColor: item.cor }}
-            />
+            <span className="w-3.5 h-3.5 rounded-sm flex-shrink-0" style={{ backgroundColor: item.cor }} />
             <span className="text-xs text-muted-foreground">{item.label}</span>
           </div>
         ))}
