@@ -10,10 +10,29 @@ export function SummaryCards({ summary }: Props) {
   const router = useRouter()
 
   const cards = [
-    { label: 'Total de Crianças', value: summary.total, icon: Users, color: 'text-blue-500', bg: 'bg-blue-500/10', border: 'border-blue-500/20', href: '/children' },
-    { label: 'Com Alertas Ativos', value: summary.comAlertas, icon: AlertTriangle, color: 'text-amber-500', bg: 'bg-amber-500/10', border: 'border-amber-500/20', sub: `${Math.round((summary.comAlertas / summary.total) * 100)}% do total`, href: '/children?alertas=true' },
-    { label: 'Casos Revisados', value: summary.revisadas, icon: CheckCircle2, color: 'text-green-500', bg: 'bg-green-500/10', border: 'border-green-500/20', sub: `${summary.total - summary.revisadas} pendentes`, href: '/children?revisado=true' },
-    { label: 'Sem Dados em Nenhuma Área', value: summary.semDados, icon: DatabaseZap, color: 'text-rose-500', bg: 'bg-rose-500/10', border: 'border-rose-500/20', sub: 'Requer cadastramento', href: '/children' },
+    {
+      label: 'Total de Crianças', value: summary.total,
+      icon: Users, color: 'text-blue-500', bg: 'bg-blue-500/10', border: 'border-blue-500/20',
+      href: '/children',
+    },
+    {
+      label: 'Com Alertas Ativos', value: summary.comAlertas,
+      icon: AlertTriangle, color: 'text-amber-500', bg: 'bg-amber-500/10', border: 'border-amber-500/20',
+      sub: `${Math.round((summary.comAlertas / summary.total) * 100)}% do total`,
+      href: '/children?alertas=true',
+    },
+    {
+      label: 'Casos Revisados', value: summary.revisadas,
+      icon: CheckCircle2, color: 'text-green-500', bg: 'bg-green-500/10', border: 'border-green-500/20',
+      sub: `${summary.total - summary.revisadas} pendentes`,
+      href: '/children?revisado=true',
+    },
+    {
+      label: 'Sem Dados em Nenhuma Área', value: summary.semDados,
+      icon: DatabaseZap, color: 'text-rose-500', bg: 'bg-rose-500/10', border: 'border-rose-500/20',
+      sub: 'Requer cadastramento urgente',
+      href: '/children?semDados=true',  // ← filtro real agora
+    },
   ]
 
   const areCards = [

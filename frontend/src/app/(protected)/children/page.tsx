@@ -7,7 +7,7 @@ import type { ChildrenResponse, Filters } from '@/types'
 import { FiltersPanel } from '@/components/children/FiltersPanel'
 import { ChildCard } from '@/components/children/ChildCard'
 import { Pagination } from '@/components/children/Pagination'
-import { Loader2, Users } from 'lucide-react'
+import { Loader2, Users, CircleSlash } from 'lucide-react'
 
 export default function ChildrenPage() {
   const searchParams = useSearchParams()
@@ -18,6 +18,7 @@ export default function ChildrenPage() {
     revisado: searchParams.get('revisado') || 'todos',
     area: searchParams.get('area') || 'todos',
     nome: searchParams.get('nome') || '',
+    semDados: searchParams.get('semDados') || undefined,
     page: 1,
   })
 
@@ -49,18 +50,44 @@ export default function ChildrenPage() {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
+  const mostraSemDados = filters.semDados === 'true'
+
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-foreground">Crianças Acompanhadas</h1>
-        <p className="text-muted-foreground text-sm mt-1">
-          {response ? (
-            <><span className="font-medium text-foreground">{response.total}</span> criança{response.total !== 1 ? 's' : ''} encontrada{response.total !== 1 ? 's' : ''}</>
-          ) : 'Carregando...'}
-        </p>
+        <div className="flex items-center gap-2 mt-1">
+          <p className="text-muted-foreground text-sm">
+            {response ? (
+              <><span className="font-medium text-foreground">{response.total}</span> criança{response.total !== 1 ? 's' : ''} encontrada{response.total !== 1 ? 's' : ''}</>
+            ) : 'Carregando...'}
+          </p>
+          {mostraSemDados && (
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-rose-500/10 text-rose-500 text-xs border border-rose-500/20">
+              <CircleSlash className="w-3 h-3" /> Sem dados cadastrados
+            </span>
+          )}
+        </div>
       </div>
 
-      <FiltersPanel filters={filters} onFilterChange={handleFilterChange} />
+      {mostraSemDados ? (
+        /* Banner explicativo quando filtro semDados está ativo */
+        <div className="flex items-start gap-3 px-4 py-3 rounded-xl bg-rose-500/5 border border-rose-500/20">
+          <CircleSlash className="w-5 h-5 text-rose-500 flex-shrink-0 mt-0.5" />
+          <div>
+            <p className="text-sm font-medium text-rose-600 dark:text-rose-400">Crianças sem dados em nenhuma área</p>
+            <p className="text-xs text-muted-foreground mt-0.5">Estas crianças não possuem registros de saúde, educação ou assistência social. É necessário realizar o cadastramento nas áreas responsáveis.</p>
+            <button
+              onClick={() => handleFilterChange({ semDados: undefined, alertas: 'todos', area: 'todos' })}
+              className="text-xs text-rose-500 hover:underline mt-1"
+            >
+              Limpar filtro →
+            </button>
+          </div>
+        </div>
+      ) : (
+        <FiltersPanel filters={filters} onFilterChange={handleFilterChange} />
+      )}
 
       {loading ? (
         <div className="flex items-center justify-center py-24"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>

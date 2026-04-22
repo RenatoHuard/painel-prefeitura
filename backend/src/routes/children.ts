@@ -12,11 +12,15 @@ function getAreaStatus(temDados: boolean, temAlerta: boolean): 'ok' | 'alerta' |
 
 export async function childrenRoutes(app: FastifyInstance) {
   app.get<{
-    Querystring: { bairro?: string; alertas?: string; revisado?: string; area?: string; nome?: string; page?: string; limit?: string }
+    Querystring: {
+      bairro?: string; alertas?: string; revisado?: string
+      area?: string; nome?: string; semDados?: string
+      page?: string; limit?: string
+    }
   }>('/', {
     preHandler: authenticate,
     handler: async (request, reply) => {
-      const { bairro, alertas, revisado, area, nome, page = '1', limit = '12' } = request.query
+      const { bairro, alertas, revisado, area, nome, semDados, page = '1', limit = '12' } = request.query
       const pageNum = Math.max(1, parseInt(page))
       const limitNum = Math.min(50, Math.max(1, parseInt(limit)))
       const skip = (pageNum - 1) * limitNum
@@ -24,7 +28,6 @@ export async function childrenRoutes(app: FastifyInstance) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const where: any = {}
 
-      // Busca por nome (case insensitive)
       if (nome && nome.trim()) {
         where.nome = { contains: nome.trim(), mode: 'insensitive' }
       }
@@ -33,8 +36,12 @@ export async function childrenRoutes(app: FastifyInstance) {
         where.bairro = bairro
       }
 
-      // Filtro por área específica
-      if (area && area !== 'todos') {
+      // Crianças SEM dados em nenhuma área
+      if (semDados === 'true') {
+        where.saude = null
+        where.educacao = null
+        where.assistenciaSocial = null
+      } else if (area && area !== 'todos') {
         if (area === 'saude') where.saude = { temAlerta: true }
         else if (area === 'educacao') where.educacao = { temAlerta: true }
         else if (area === 'social') where.assistenciaSocial = { temAlerta: true }

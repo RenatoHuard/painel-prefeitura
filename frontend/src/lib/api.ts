@@ -28,8 +28,13 @@ export async function getChildren(filters: Partial<Filters> = {}): Promise<Child
   const params = new URLSearchParams()
   if (filters.nome && filters.nome.trim()) params.set('nome', filters.nome.trim())
   if (filters.bairro && filters.bairro !== 'todos') params.set('bairro', filters.bairro)
-  if (filters.area && filters.area !== 'todos') params.set('area', filters.area)
-  else if (filters.alertas && filters.alertas !== 'todos') params.set('alertas', filters.alertas)
+  if (filters.semDados === 'true') {
+    params.set('semDados', 'true')
+  } else if (filters.area && filters.area !== 'todos') {
+    params.set('area', filters.area)
+  } else if (filters.alertas && filters.alertas !== 'todos') {
+    params.set('alertas', filters.alertas)
+  }
   if (filters.revisado && filters.revisado !== 'todos') params.set('revisado', filters.revisado)
   if (filters.page) params.set('page', String(filters.page))
   params.set('limit', '12')

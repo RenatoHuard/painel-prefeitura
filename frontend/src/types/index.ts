@@ -31,5 +31,5 @@ export interface AuthResponse { token: string; tecnico: Tecnico }
 
 export interface Filters {
   bairro: string; alertas: string; revisado: string
-  area?: string; nome?: string; page: number
+  area?: string; nome?: string; semDados?: string; page: number
 }
