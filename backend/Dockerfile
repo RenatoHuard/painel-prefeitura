@@ -8,7 +8,7 @@ COPY data/ ./data/
 # Copy backend files
 COPY backend/package*.json ./backend/
 WORKDIR /app/backend
-RUN npm ci
+RUN npm install
 
 COPY backend/ .
 
