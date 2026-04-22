@@ -4,22 +4,9 @@ import type { Filters } from '@/types'
 import { Filter, X } from 'lucide-react'
 
 const BAIRROS = [
-  'todos',
-  'Acari',
-  'Anchieta',
-  'Bangu',
-  'Campo Grande',
-  'Complexo do Alemão',
-  'Cosmos',
-  'Guadalupe',
-  'Jacarepaguá',
-  'Madureira',
-  'Padre Miguel',
-  'Pavuna',
-  'Realengo',
-  'Rocinha',
-  'Santa Cruz',
-  'Vigário Geral',
+  'todos','Acari','Anchieta','Bangu','Campo Grande','Complexo do Alemão',
+  'Cosmos','Guadalupe','Jacarepaguá','Madureira','Padre Miguel','Pavuna',
+  'Realengo','Rocinha','Santa Cruz','Vigário Geral',
 ]
 
 interface Props {
@@ -27,15 +14,18 @@ interface Props {
   onFilterChange: (f: Partial<Filters>) => void
 }
 
+const selectCls = "w-full px-3 py-2 rounded-md border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+
 export function FiltersPanel({ filters, onFilterChange }: Props) {
   const activeCount = [
     filters.bairro !== 'todos',
     filters.alertas !== 'todos',
     filters.revisado !== 'todos',
+    (filters.area ?? 'todos') !== 'todos',
   ].filter(Boolean).length
 
   function reset() {
-    onFilterChange({ bairro: 'todos', alertas: 'todos', revisado: 'todos' })
+    onFilterChange({ bairro: 'todos', alertas: 'todos', revisado: 'todos', area: 'todos' })
   }
 
   return (
@@ -51,46 +41,52 @@ export function FiltersPanel({ filters, onFilterChange }: Props) {
           )}
         </div>
         {activeCount > 0 && (
-          <button
-            onClick={reset}
-            className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <X className="w-3 h-3" />
-            Limpar
+          <button onClick={reset} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors">
+            <X className="w-3 h-3" /> Limpar
           </button>
         )}
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {/* Bairro */}
         <div className="space-y-1">
-          <label className="text-xs font-medium text-muted-foreground" htmlFor="filter-bairro">
-            Bairro
-          </label>
-          <select
-            id="filter-bairro"
-            value={filters.bairro}
-            onChange={(e) => onFilterChange({ bairro: e.target.value })}
-            className="w-full px-3 py-2 rounded-md border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-          >
-            {BAIRROS.map((b) => (
-              <option key={b} value={b}>
-                {b === 'todos' ? 'Todos os bairros' : b}
-              </option>
-            ))}
+          <label className="text-xs font-medium text-muted-foreground" htmlFor="filter-bairro">Bairro</label>
+          <select id="filter-bairro" value={filters.bairro} onChange={(e) => onFilterChange({ bairro: e.target.value })} className={selectCls}>
+            {BAIRROS.map((b) => <option key={b} value={b}>{b === 'todos' ? 'Todos os bairros' : b}</option>)}
           </select>
         </div>
 
-        {/* Alertas */}
+        {/* Área de alerta */}
         <div className="space-y-1">
-          <label className="text-xs font-medium text-muted-foreground" htmlFor="filter-alertas">
-            Alertas
-          </label>
+          <label className="text-xs font-medium text-muted-foreground" htmlFor="filter-area">Área</label>
+          <select
+            id="filter-area"
+            value={filters.area ?? 'todos'}
+            onChange={(e) => {
+              const val = e.target.value
+              // Se escolher área específica, limpa o filtro genérico de alertas
+              onFilterChange({ area: val, alertas: val !== 'todos' ? 'todos' : filters.alertas })
+            }}
+            className={selectCls}
+          >
+            <option value="todos">Todas as áreas</option>
+            <option value="saude">⚕ Alertas de Saúde</option>
+            <option value="educacao">📚 Alertas de Educação</option>
+            <option value="social">🤝 Alertas Assist. Social</option>
+          </select>
+        </div>
+
+        {/* Alertas genérico */}
+        <div className="space-y-1">
+          <label className="text-xs font-medium text-muted-foreground" htmlFor="filter-alertas">Alertas</label>
           <select
             id="filter-alertas"
             value={filters.alertas}
-            onChange={(e) => onFilterChange({ alertas: e.target.value })}
-            className="w-full px-3 py-2 rounded-md border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            onChange={(e) => {
+              // Se escolher filtro genérico, limpa a área específica
+              onFilterChange({ alertas: e.target.value, area: 'todos' })
+            }}
+            className={selectCls}
           >
             <option value="todos">Todos</option>
             <option value="true">Com alertas ativos</option>
@@ -100,18 +96,11 @@ export function FiltersPanel({ filters, onFilterChange }: Props) {
 
         {/* Revisado */}
         <div className="space-y-1">
-          <label className="text-xs font-medium text-muted-foreground" htmlFor="filter-revisado">
-            Status de Revisão
-          </label>
-          <select
-            id="filter-revisado"
-            value={filters.revisado}
-            onChange={(e) => onFilterChange({ revisado: e.target.value })}
-            className="w-full px-3 py-2 rounded-md border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-          >
+          <label className="text-xs font-medium text-muted-foreground" htmlFor="filter-revisado">Revisão</label>
+          <select id="filter-revisado" value={filters.revisado} onChange={(e) => onFilterChange({ revisado: e.target.value })} className={selectCls}>
             <option value="todos">Todos</option>
-            <option value="false">Pendentes de revisão</option>
-            <option value="true">Já revisados</option>
+            <option value="false">Pendentes</option>
+            <option value="true">Revisados</option>
           </select>
         </div>
       </div>

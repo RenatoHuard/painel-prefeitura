@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { login } from '@/lib/api'
 import { saveToken, saveUser, isAuthenticated } from '@/lib/auth'
-import { Shield, Eye, EyeOff, Loader2 } from 'lucide-react'
+import { Eye, EyeOff, Loader2 } from 'lucide-react'
 import { ThemeToggle } from '@/components/layout/ThemeToggle'
 
 export default function LoginPage() {
@@ -16,16 +16,13 @@ export default function LoginPage() {
   const [error, setError] = useState('')
 
   useEffect(() => {
-    if (isAuthenticated()) {
-      router.replace('/dashboard')
-    }
+    if (isAuthenticated()) router.replace('/dashboard')
   }, [router])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError('')
     setLoading(true)
-
     try {
       const data = await login(email, password)
       saveToken(data.token)
@@ -39,105 +36,135 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
-      {/* Header */}
-      <div className="flex justify-end p-4">
-        <ThemeToggle />
+    <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#f0f4f8' }}>
+      {/* Barra superior no estilo Prefeitura Rio */}
+      <div style={{ backgroundColor: '#005B9A' }} className="w-full">
+        <div className="max-w-6xl mx-auto px-4 py-2 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            {/* Brasão simplificado */}
+            <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center flex-shrink-0 shadow">
+              <svg viewBox="0 0 40 40" className="w-8 h-8" fill="none">
+                <circle cx="20" cy="20" r="18" fill="#005B9A" />
+                <text x="20" y="25" textAnchor="middle" fontSize="10" fontWeight="bold" fill="white">RIO</text>
+              </svg>
+            </div>
+            <div>
+              <p className="text-white font-bold text-sm leading-tight">PREFEITURA</p>
+              <p className="text-white/80 text-xs leading-tight">Rio de Janeiro</p>
+            </div>
+          </div>
+          <ThemeToggle />
+        </div>
       </div>
 
+      {/* Faixa verde secundária */}
+      <div style={{ backgroundColor: '#00A86B' }} className="w-full py-1" />
+
       {/* Main */}
-      <div className="flex-1 flex items-center justify-center px-4">
+      <div className="flex-1 flex items-center justify-center px-4 py-12">
         <div className="w-full max-w-md">
-          {/* Logo / Icon */}
-          <div className="flex flex-col items-center mb-8">
-            <div className="w-16 h-16 rounded-2xl bg-primary flex items-center justify-center mb-4 shadow-lg">
-              <Shield className="w-8 h-8 text-primary-foreground" />
+          {/* Header */}
+          <div className="text-center mb-8">
+            <div
+              className="w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg"
+              style={{ backgroundColor: '#005B9A' }}
+            >
+              <svg viewBox="0 0 48 48" className="w-12 h-12" fill="none">
+                <path d="M24 4L6 14v20l18 10 18-10V14L24 4z" fill="white" fillOpacity="0.2" stroke="white" strokeWidth="2"/>
+                <path d="M24 12a6 6 0 100 12 6 6 0 000-12z" fill="white"/>
+                <path d="M16 34c0-4.4 3.6-8 8-8s8 3.6 8 8" stroke="white" strokeWidth="2" strokeLinecap="round"/>
+              </svg>
             </div>
-            <h1 className="text-2xl font-bold text-foreground">Painel de Acompanhamento</h1>
-            <p className="text-muted-foreground mt-1 text-sm text-center">
+            <h1 className="text-2xl font-bold text-gray-800 dark:text-white">
+              Painel de Acompanhamento
+            </h1>
+            <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">
               Sistema de monitoramento de crianças em vulnerabilidade social
             </p>
           </div>
 
           {/* Card */}
-          <div className="bg-card border border-border rounded-xl shadow-sm p-8">
-            <h2 className="text-lg font-semibold mb-6 text-card-foreground">Acesso restrito</h2>
+          <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+            {/* Card header */}
+            <div style={{ backgroundColor: '#005B9A' }} className="px-8 py-4">
+              <h2 className="text-white font-semibold text-lg">Acesso Restrito</h2>
+              <p className="text-white/70 text-xs mt-0.5">Secretaria Municipal de Assistência Social</p>
+            </div>
 
-            <form onSubmit={handleSubmit} className="space-y-5">
-              <div className="space-y-1.5">
-                <label htmlFor="email" className="text-sm font-medium text-foreground">
-                  E-mail
-                </label>
-                <input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="tecnico@prefeitura.rio"
-                  className="w-full px-3 py-2 rounded-md border border-input bg-background text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-colors"
-                  required
-                  disabled={loading}
-                  autoComplete="username"
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <label htmlFor="password" className="text-sm font-medium text-foreground">
-                  Senha
-                </label>
-                <div className="relative">
+            {/* Form */}
+            <div className="px-8 py-6">
+              <form onSubmit={handleSubmit} className="space-y-5">
+                <div className="space-y-1.5">
+                  <label htmlFor="email" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    E-mail funcional
+                  </label>
                   <input
-                    id="password"
-                    type={showPassword ? 'text' : 'password'}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="••••••••"
-                    className="w-full px-3 py-2 pr-10 rounded-md border border-input bg-background text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-colors"
+                    id="email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="tecnico@prefeitura.rio"
+                    className="w-full px-3 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:border-transparent transition-all disabled:opacity-50"
+                    style={{ '--tw-ring-color': '#005B9A' } as React.CSSProperties}
+                    onFocus={e => e.target.style.boxShadow = '0 0 0 2px #005B9A'}
+                    onBlur={e => e.target.style.boxShadow = ''}
                     required
                     disabled={loading}
-                    autoComplete="current-password"
                   />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                    tabIndex={-1}
-                    aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
-                  >
-                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </button>
                 </div>
-              </div>
 
-              {error && (
-                <div
-                  role="alert"
-                  className="flex items-center gap-2 px-3 py-2 rounded-md bg-destructive/10 border border-destructive/20 text-destructive text-sm"
-                >
-                  <span>⚠</span>
-                  <span>{error}</span>
+                <div className="space-y-1.5">
+                  <label htmlFor="password" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Senha
+                  </label>
+                  <div className="relative">
+                    <input
+                      id="password"
+                      type={showPassword ? 'text' : 'password'}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="••••••••"
+                      className="w-full px-3 py-2.5 pr-10 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm placeholder:text-gray-400 focus:outline-none transition-all disabled:opacity-50"
+                      onFocus={e => e.target.style.boxShadow = '0 0 0 2px #005B9A'}
+                      onBlur={e => e.target.style.boxShadow = ''}
+                      required
+                      disabled={loading}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
+                      tabIndex={-1}
+                      aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
+                    >
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
                 </div>
-              )}
 
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full py-2.5 px-4 rounded-md bg-primary text-primary-foreground font-medium text-sm hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
-              >
-                {loading ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    Entrando...
-                  </>
-                ) : (
-                  'Entrar'
+                {error && (
+                  <div role="alert" className="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 text-sm">
+                    <span>⚠</span>
+                    <span>{error}</span>
+                  </div>
                 )}
-              </button>
-            </form>
+
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full py-3 px-4 rounded-lg text-white font-semibold text-sm hover:opacity-90 active:opacity-80 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
+                  style={{ backgroundColor: '#005B9A', '--tw-ring-color': '#005B9A' } as React.CSSProperties}
+                >
+                  {loading ? (
+                    <><Loader2 className="w-4 h-4 animate-spin" />Entrando...</>
+                  ) : 'Entrar'}
+                </button>
+              </form>
+            </div>
           </div>
 
-          <p className="text-center text-xs text-muted-foreground mt-6">
-            Prefeitura do Rio de Janeiro · Sistema Interno
+          <p className="text-center text-xs text-gray-400 mt-6">
+            Prefeitura do Rio de Janeiro · Sistema Interno · Uso restrito a servidores autorizados
           </p>
         </div>
       </div>

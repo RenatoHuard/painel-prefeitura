@@ -11,31 +11,24 @@ function getAreaStatus(temDados: boolean, temAlerta: boolean): 'ok' | 'alerta' |
 }
 
 export async function childrenRoutes(app: FastifyInstance) {
-  // GET /children - lista com filtros e paginação
   app.get<{
     Querystring: {
       bairro?: string
       alertas?: string
       revisado?: string
+      area?: string
       page?: string
       limit?: string
     }
   }>('/', {
     preHandler: authenticate,
     handler: async (request, reply) => {
-      const {
-        bairro,
-        alertas,
-        revisado,
-        page = '1',
-        limit = '10',
-      } = request.query
+      const { bairro, alertas, revisado, area, page = '1', limit = '12' } = request.query
 
       const pageNum = Math.max(1, parseInt(page))
       const limitNum = Math.min(50, Math.max(1, parseInt(limit)))
       const skip = (pageNum - 1) * limitNum
 
-      // Build where clause
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const where: any = {}
 
@@ -43,7 +36,17 @@ export async function childrenRoutes(app: FastifyInstance) {
         where.bairro = bairro
       }
 
-      if (alertas === 'true') {
+      // Filtro por área específica com alerta
+      if (area && area !== 'todos') {
+        if (area === 'saude') {
+          where.saude = { temAlerta: true }
+        } else if (area === 'educacao') {
+          where.educacao = { temAlerta: true }
+        } else if (area === 'social') {
+          where.assistenciaSocial = { temAlerta: true }
+        }
+      } else if (alertas === 'true') {
+        // Qualquer alerta
         where.OR = [
           { saude: { temAlerta: true } },
           { educacao: { temAlerta: true } },
@@ -51,24 +54,9 @@ export async function childrenRoutes(app: FastifyInstance) {
         ]
       } else if (alertas === 'false') {
         where.AND = [
-          {
-            OR: [
-              { saude: null },
-              { saude: { temAlerta: false } },
-            ],
-          },
-          {
-            OR: [
-              { educacao: null },
-              { educacao: { temAlerta: false } },
-            ],
-          },
-          {
-            OR: [
-              { assistenciaSocial: null },
-              { assistenciaSocial: { temAlerta: false } },
-            ],
-          },
+          { OR: [{ saude: null }, { saude: { temAlerta: false } }] },
+          { OR: [{ educacao: null }, { educacao: { temAlerta: false } }] },
+          { OR: [{ assistenciaSocial: null }, { assistenciaSocial: { temAlerta: false } }] },
         ]
       }
 
@@ -116,32 +104,21 @@ export async function childrenRoutes(app: FastifyInstance) {
           areas: {
             saude: getAreaStatus(!!child.saude, child.saude?.temAlerta ?? false),
             educacao: getAreaStatus(!!child.educacao, child.educacao?.temAlerta ?? false),
-            assistenciaSocial: getAreaStatus(
-              !!child.assistenciaSocial,
-              child.assistenciaSocial?.temAlerta ?? false
-            ),
+            assistenciaSocial: getAreaStatus(!!child.assistenciaSocial, child.assistenciaSocial?.temAlerta ?? false),
           },
           revisado: child.revisoes.length > 0,
           ultimaRevisao: child.revisoes[0]?.criadoEm.toISOString() ?? null,
         }
       })
 
-      return reply.send({
-        data,
-        total,
-        page: pageNum,
-        limit: limitNum,
-        totalPages: Math.ceil(total / limitNum),
-      })
+      return reply.send({ data, total, page: pageNum, limit: limitNum, totalPages: Math.ceil(total / limitNum) })
     },
   })
 
-  // GET /children/:id - detalhe completo
   app.get<{ Params: { id: string } }>('/:id', {
     preHandler: authenticate,
     handler: async (request, reply) => {
       const { id } = request.params
-
       const child = await prisma.child.findUnique({
         where: { id },
         include: {
@@ -154,10 +131,7 @@ export async function childrenRoutes(app: FastifyInstance) {
           },
         },
       })
-
-      if (!child) {
-        return reply.status(404).send({ error: 'Criança não encontrada' })
-      }
+      if (!child) return reply.status(404).send({ error: 'Criança não encontrada' })
 
       return reply.send({
         id: child.id,
@@ -166,30 +140,24 @@ export async function childrenRoutes(app: FastifyInstance) {
         bairro: child.bairro,
         responsavel: child.responsavel,
         telefone: child.telefone,
-        saude: child.saude
-          ? {
-              cartaoSus: child.saude.cartaoSus,
-              ultimaConsulta: child.saude.ultimaConsulta?.toISOString() ?? null,
-              vacinasEmDia: child.saude.vacinasEmDia,
-              alertas: child.saude.alertas,
-            }
-          : null,
-        educacao: child.educacao
-          ? {
-              escola: child.educacao.escola,
-              serie: child.educacao.serie,
-              frequenciaPercentual: child.educacao.frequenciaPercentual,
-              alertas: child.educacao.alertas,
-            }
-          : null,
-        assistenciaSocial: child.assistenciaSocial
-          ? {
-              nis: child.assistenciaSocial.nis,
-              beneficios: child.assistenciaSocial.beneficios,
-              statusBeneficios: child.assistenciaSocial.statusBeneficios,
-              alertas: child.assistenciaSocial.alertas,
-            }
-          : null,
+        saude: child.saude ? {
+          cartaoSus: child.saude.cartaoSus,
+          ultimaConsulta: child.saude.ultimaConsulta?.toISOString() ?? null,
+          vacinasEmDia: child.saude.vacinasEmDia,
+          alertas: child.saude.alertas,
+        } : null,
+        educacao: child.educacao ? {
+          escola: child.educacao.escola,
+          serie: child.educacao.serie,
+          frequenciaPercentual: child.educacao.frequenciaPercentual,
+          alertas: child.educacao.alertas,
+        } : null,
+        assistenciaSocial: child.assistenciaSocial ? {
+          nis: child.assistenciaSocial.nis,
+          beneficios: child.assistenciaSocial.beneficios,
+          statusBeneficios: child.assistenciaSocial.statusBeneficios,
+          alertas: child.assistenciaSocial.alertas,
+        } : null,
         revisoes: child.revisoes.map((r) => ({
           id: r.id,
           tecnico: r.tecnico.email,
@@ -200,44 +168,22 @@ export async function childrenRoutes(app: FastifyInstance) {
     },
   })
 
-  // PATCH /children/:id/review - registra revisão
   app.patch<{ Params: { id: string } }>('/:id/review', {
     preHandler: authenticate,
     handler: async (request, reply) => {
       const { id } = request.params
       const payload = request.user as JwtPayload
-
       const child = await prisma.child.findUnique({ where: { id } })
-      if (!child) {
-        return reply.status(404).send({ error: 'Criança não encontrada' })
-      }
-
-      const tecnico = await prisma.tecnico.findUnique({
-        where: { email: payload.preferred_username },
-      })
-
-      if (!tecnico) {
-        return reply.status(401).send({ error: 'Técnico não encontrado' })
-      }
-
+      if (!child) return reply.status(404).send({ error: 'Criança não encontrada' })
+      const tecnico = await prisma.tecnico.findUnique({ where: { email: payload.preferred_username } })
+      if (!tecnico) return reply.status(401).send({ error: 'Técnico não encontrado' })
       const revisao = await prisma.revisao.create({
-        data: {
-          childId: id,
-          tecnicoId: tecnico.id,
-        },
-        include: {
-          tecnico: { select: { email: true, nome: true } },
-        },
+        data: { childId: id, tecnicoId: tecnico.id },
+        include: { tecnico: { select: { email: true, nome: true } } },
       })
-
       return reply.send({
         success: true,
-        revisao: {
-          id: revisao.id,
-          tecnico: revisao.tecnico.email,
-          nomeTecnico: revisao.tecnico.nome,
-          criadoEm: revisao.criadoEm.toISOString(),
-        },
+        revisao: { id: revisao.id, tecnico: revisao.tecnico.email, nomeTecnico: revisao.tecnico.nome, criadoEm: revisao.criadoEm.toISOString() },
       })
     },
   })

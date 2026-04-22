@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { getChildren } from '@/lib/api'
 import type { ChildrenResponse, Filters } from '@/types'
 import { FiltersPanel } from '@/components/children/FiltersPanel'
@@ -16,7 +17,13 @@ const DEFAULT_FILTERS: Filters = {
 }
 
 export default function ChildrenPage() {
-  const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS)
+  const searchParams = useSearchParams()
+  const [filters, setFilters] = useState<Filters>(() => ({
+    bairro: searchParams.get('bairro') || 'todos',
+    alertas: searchParams.get('alertas') || 'todos',
+    revisado: searchParams.get('revisado') || 'todos',
+    page: 1,
+  }))
   const [response, setResponse] = useState<ChildrenResponse | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
