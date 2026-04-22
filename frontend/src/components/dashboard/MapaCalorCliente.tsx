@@ -4,6 +4,14 @@ import { useEffect, useRef } from 'react'
 import type { Summary } from '@/types'
 import { RIO_BAIRROS_GEOJSON } from '@/lib/rioGeoJson'
 
+// Leaflet é carregado via CDN no layout.tsx — disponível em window.L
+declare global {
+  interface Window {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    L: any
+  }
+}
+
 interface Props { summary: Summary }
 
 function getColor(alertas: number, total: number): string {
@@ -31,78 +39,63 @@ export default function MapaCalorCliente({ summary }: Props) {
 
   useEffect(() => {
     if (!mapRef.current) return
-    if (mapInstanceRef.current) return // já inicializado
+    if (mapInstanceRef.current) return
+    if (!window.L) return
 
-    // Importa Leaflet dinamicamente (só no cliente)
-    import('leaflet').then((L) => {
-      if (!mapRef.current) return
+    const L = window.L
 
-      // Fix ícones
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      delete (L.Icon.Default.prototype as any)._getIconUrl
-      L.Icon.Default.mergeOptions({
-        iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
-        iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-        shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-      })
-
-      const map = L.map(mapRef.current!, {
-        center: [-22.900, -43.450],
-        zoom: 11,
-        scrollWheelZoom: false,
-        zoomControl: true,
-      })
-
-      mapInstanceRef.current = map
-
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-      }).addTo(map)
-
-      // Lookup bairro → dados
-      const bairroMap = new Map(
-        summary.porBairro.map((b) => [
-          b.bairro.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ''),
-          b
-        ])
-      )
-
-      L.geoJSON(RIO_BAIRROS_GEOJSON as GeoJSON.GeoJsonObject, {
-        style: (feature) => {
-          const nome = feature?.properties?.nome ?? ''
-          const key = nome.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-          const dados = bairroMap.get(key) ?? { total: 0, comAlertas: 0 }
-          return {
-            fillColor: getColor(dados.comAlertas, dados.total),
-            fillOpacity: 0.75,
-            color: '#1e293b',
-            weight: 1.5,
-          }
-        },
-        onEachFeature: (feature, layer) => {
-          const nome = feature?.properties?.nome ?? ''
-          const key = nome.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-          const dados = bairroMap.get(key) ?? { total: 0, comAlertas: 0 }
-          const pct = dados.total > 0 ? Math.round((dados.comAlertas / dados.total) * 100) : 0
-
-          layer.bindTooltip(
-            `<div style="font-family:sans-serif;font-size:12px;padding:4px 8px;line-height:1.6;background:#1e293b;color:#f1f5f9;border:1px solid #334155;border-radius:6px">
-              <strong>${nome}</strong><br/>
-              ${dados.total} criança${dados.total !== 1 ? 's' : ''}<br/>
-              ${dados.comAlertas} com alerta${dados.comAlertas !== 1 ? 's' : ''} (${pct}%)
-            </div>`,
-            { sticky: true, opacity: 1, className: 'leaflet-tooltip-custom' }
-          )
-        }
-      }).addTo(map)
+    const map = L.map(mapRef.current, {
+      center: [-22.900, -43.450],
+      zoom: 11,
+      scrollWheelZoom: false,
     })
 
-    return () => {
-      if (mapInstanceRef.current) {
+    mapInstanceRef.current = map
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+    }).addTo(map)
+
+    const bairroMap = new Map(
+      summary.porBairro.map((b) => [
+        b.bairro.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ''),
+        b
+      ])
+    )
+
+    L.geoJSON(RIO_BAIRROS_GEOJSON, {
+      style: (feature: { properties?: { nome?: string } }) => {
+        const nome = feature?.properties?.nome ?? ''
+        const key = nome.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+        const dados = bairroMap.get(key) ?? { total: 0, comAlertas: 0 }
+        return {
+          fillColor: getColor(dados.comAlertas, dados.total),
+          fillOpacity: 0.75,
+          color: '#1e293b',
+          weight: 1.5,
+        }
+      },
+      onEachFeature: (feature: { properties?: { nome?: string } }, layer: unknown) => {
+        const nome = feature?.properties?.nome ?? ''
+        const key = nome.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+        const dados = bairroMap.get(key) ?? { total: 0, comAlertas: 0 }
+        const pct = dados.total > 0 ? Math.round((dados.comAlertas / dados.total) * 100) : 0
+
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        ;(mapInstanceRef.current as any).remove()
-        mapInstanceRef.current = null
+        ;(layer as any).bindTooltip(
+          `<div style="font-size:12px;line-height:1.6">
+            <strong>${nome}</strong><br/>
+            ${dados.total} criança${dados.total !== 1 ? 's' : ''}<br/>
+            ${dados.comAlertas} com alerta${dados.comAlertas !== 1 ? 's' : ''} (${pct}%)
+          </div>`,
+          { sticky: true, opacity: 1 }
+        )
       }
+    }).addTo(map)
+
+    return () => {
+      map.remove()
+      mapInstanceRef.current = null
     }
   }, [summary])
 
@@ -113,11 +106,7 @@ export default function MapaCalorCliente({ summary }: Props) {
         Passe o mouse sobre o bairro para ver os detalhes
       </p>
 
-      <div
-        ref={mapRef}
-        className="rounded-lg overflow-hidden"
-        style={{ height: '360px', zIndex: 0 }}
-      />
+      <div ref={mapRef} className="rounded-lg overflow-hidden" style={{ height: '360px', zIndex: 0 }} />
 
       <div className="flex flex-wrap gap-3 mt-4">
         {escala.map((item) => (
