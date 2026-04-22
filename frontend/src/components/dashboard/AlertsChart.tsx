@@ -15,6 +15,7 @@ interface Props {
 }
 
 const COLORS = ['#ef4444', '#a855f7', '#f97316']
+const LABELS = ['Saúde', 'Educação', 'Assist. Social']
 
 export function AlertsChart({ summary }: Props) {
   const data = [
@@ -37,49 +38,60 @@ export function AlertsChart({ summary }: Props) {
           Sem alertas no momento
         </div>
       ) : (
-        <ResponsiveContainer width="100%" height={220}>
-          <PieChart>
-            <Pie
-              data={data}
-              cx="50%"
-              cy="50%"
-              innerRadius={55}
-              outerRadius={85}
-              paddingAngle={3}
-              dataKey="value"
-              label={({ name, percent }) =>
-                `${name} ${(percent * 100).toFixed(0)}%`
-              }
-              labelLine={false}
-            >
-              {data.map((_, index) => (
-                <Cell
-                  key={index}
-                  fill={COLORS[index % COLORS.length]}
-                  stroke="transparent"
-                />
-              ))}
-            </Pie>
-            <Tooltip
-              formatter={(value: number) => [`${value} crianças`, '']}
-              contentStyle={{
-                backgroundColor: 'hsl(var(--card))',
-                border: '1px solid hsl(var(--border))',
-                borderRadius: '8px',
-                fontSize: '12px',
-              }}
-            />
-            <Legend
-              iconType="circle"
-              iconSize={8}
-              formatter={(value) => (
-                <span style={{ fontSize: '12px', color: 'hsl(var(--muted-foreground))' }}>
-                  {value}
-                </span>
-              )}
-            />
-          </PieChart>
-        </ResponsiveContainer>
+        <>
+          <ResponsiveContainer width="100%" height={180}>
+            <PieChart>
+              <Pie
+                data={data}
+                cx="50%"
+                cy="50%"
+                innerRadius={50}
+                outerRadius={80}
+                paddingAngle={3}
+                dataKey="value"
+              >
+                {data.map((_, index) => (
+                  <Cell
+                    key={index}
+                    fill={COLORS[index % COLORS.length]}
+                    stroke="transparent"
+                  />
+                ))}
+              </Pie>
+              <Tooltip
+                formatter={(value: number) => [`${value} crianças`, '']}
+                contentStyle={{
+                  backgroundColor: 'hsl(var(--card))',
+                  border: '1px solid hsl(var(--border))',
+                  borderRadius: '8px',
+                  fontSize: '12px',
+                }}
+              />
+            </PieChart>
+          </ResponsiveContainer>
+
+          {/* Custom legend com percentuais legíveis */}
+          <div className="flex flex-col gap-2 mt-2">
+            {data.map((entry, index) => {
+              const pct = total > 0 ? Math.round((entry.value / total) * 100) : 0
+              return (
+                <div key={entry.name} className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span
+                      className="w-3 h-3 rounded-full flex-shrink-0"
+                      style={{ backgroundColor: COLORS[index % COLORS.length] }}
+                    />
+                    <span className="text-sm text-muted-foreground">{entry.name}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-semibold text-card-foreground">{entry.value}</span>
+                    <span className="text-xs text-muted-foreground w-10 text-right">{pct}%</span>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </>
       )}
     </div>
   )

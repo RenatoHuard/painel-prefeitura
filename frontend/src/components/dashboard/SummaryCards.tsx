@@ -1,3 +1,6 @@
+'use client'
+
+import { useRouter } from 'next/navigation'
 import type { Summary } from '@/types'
 import { Users, AlertTriangle, CheckCircle2, HeartPulse, BookOpen, HandHeart, DatabaseZap } from 'lucide-react'
 
@@ -6,6 +9,12 @@ interface Props {
 }
 
 export function SummaryCards({ summary }: Props) {
+  const router = useRouter()
+
+  function go(params?: string) {
+    router.push(`/children${params ? `?${params}` : ''}`)
+  }
+
   const cards = [
     {
       label: 'Total de Crianças',
@@ -14,6 +23,7 @@ export function SummaryCards({ summary }: Props) {
       color: 'text-blue-500',
       bg: 'bg-blue-500/10',
       border: 'border-blue-500/20',
+      onClick: () => go(),
     },
     {
       label: 'Com Alertas Ativos',
@@ -23,6 +33,7 @@ export function SummaryCards({ summary }: Props) {
       bg: 'bg-amber-500/10',
       border: 'border-amber-500/20',
       sub: `${Math.round((summary.comAlertas / summary.total) * 100)}% do total`,
+      onClick: () => go('alertas=true'),
     },
     {
       label: 'Casos Revisados',
@@ -32,6 +43,7 @@ export function SummaryCards({ summary }: Props) {
       bg: 'bg-green-500/10',
       border: 'border-green-500/20',
       sub: `${summary.total - summary.revisadas} pendentes`,
+      onClick: () => go('revisado=true'),
     },
     {
       label: 'Sem Dados em Nenhuma Área',
@@ -41,6 +53,7 @@ export function SummaryCards({ summary }: Props) {
       bg: 'bg-rose-500/10',
       border: 'border-rose-500/20',
       sub: 'Requer cadastramento',
+      onClick: () => go(),
     },
   ]
 
@@ -51,6 +64,7 @@ export function SummaryCards({ summary }: Props) {
       icon: HeartPulse,
       color: 'text-red-500',
       bg: 'bg-red-500/10',
+      onClick: () => go('alertas=true'),
     },
     {
       label: 'Alertas — Educação',
@@ -58,6 +72,7 @@ export function SummaryCards({ summary }: Props) {
       icon: BookOpen,
       color: 'text-purple-500',
       bg: 'bg-purple-500/10',
+      onClick: () => go('alertas=true'),
     },
     {
       label: 'Alertas — Assist. Social',
@@ -65,6 +80,7 @@ export function SummaryCards({ summary }: Props) {
       icon: HandHeart,
       color: 'text-orange-500',
       bg: 'bg-orange-500/10',
+      onClick: () => go('alertas=true'),
     },
   ]
 
@@ -73,9 +89,11 @@ export function SummaryCards({ summary }: Props) {
       {/* Main cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
         {cards.map((card) => (
-          <div
+          <button
             key={card.label}
-            className={`bg-card border ${card.border ?? 'border-border'} rounded-xl p-4 md:p-5`}
+            onClick={card.onClick}
+            className={`bg-card border ${card.border ?? 'border-border'} rounded-xl p-4 md:p-5 text-left hover:shadow-md hover:scale-[1.02] transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring group`}
+            aria-label={`Ver ${card.label}`}
           >
             <div className="flex items-start justify-between gap-2">
               <div>
@@ -89,14 +107,22 @@ export function SummaryCards({ summary }: Props) {
                 <card.icon className={`w-4 h-4 ${card.color}`} />
               </div>
             </div>
-          </div>
+            <p className="text-xs text-muted-foreground/60 mt-2 group-hover:text-muted-foreground transition-colors">
+              Clique para filtrar →
+            </p>
+          </button>
         ))}
       </div>
 
       {/* Area cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4">
         {areCards.map((card) => (
-          <div key={card.label} className="bg-card border border-border rounded-xl p-4 flex items-center gap-4">
+          <button
+            key={card.label}
+            onClick={card.onClick}
+            className="bg-card border border-border rounded-xl p-4 flex items-center gap-4 text-left hover:shadow-md hover:scale-[1.02] transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            aria-label={`Ver ${card.label}`}
+          >
             <div className={`w-10 h-10 rounded-lg ${card.bg} flex items-center justify-center flex-shrink-0`}>
               <card.icon className={`w-5 h-5 ${card.color}`} />
             </div>
@@ -104,7 +130,7 @@ export function SummaryCards({ summary }: Props) {
               <p className="text-xs text-muted-foreground">{card.label}</p>
               <p className={`text-xl font-bold ${card.color}`}>{card.value}</p>
             </div>
-          </div>
+          </button>
         ))}
       </div>
     </div>
