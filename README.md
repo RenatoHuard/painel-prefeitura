@@ -7,12 +7,12 @@ Sistema para técnicos de campo acompanharem crianças em situação de vulnerab
 ## Como rodar o projeto
 
 ### Pré-requisitos
-- [Docker](https://www.docker.com/) e [Docker Compose](https://docs.docker.com/compose/) instalados
+- [Docker Desktop](https://www.docker.com/products/docker-desktop) instalado e em execução
 
 ### Subir tudo do zero
 
 ```bash
-git clone <url-do-repositorio>
+git clone https://github.com/RenatoHuard/painel-prefeitura.git
 cd painel-prefeitura
 docker compose up --build
 ```
@@ -35,21 +35,21 @@ Acesse: **http://localhost:3000**
 ```
 painel-prefeitura/
 ├── data/
-│   └── seed.json          # 25 crianças fictícias com casos-limite
-├── backend/               # API Fastify + Prisma + PostgreSQL
+│   └── seed.json              # 25 crianças fictícias com casos-limite
+├── backend/                   # API Fastify + Prisma + PostgreSQL
 │   ├── prisma/
 │   │   ├── schema.prisma
 │   │   ├── seed.ts
 │   │   └── migrations/
 │   └── src/
-│       ├── routes/        # auth, children, summary
-│       ├── middleware/    # JWT auth
+│       ├── routes/            # auth, children, summary
+│       ├── middleware/        # autenticação JWT
 │       └── server.ts
-├── frontend/              # Next.js 14 App Router
+├── frontend/                  # Next.js 14 App Router
 │   └── src/
-│       ├── app/           # Pages (login, dashboard, children)
-│       ├── components/    # UI + layout + feature components
-│       ├── lib/           # api.ts, auth.ts, utils.ts
+│       ├── app/               # login, dashboard, children, children/[id]
+│       ├── components/        # layout, dashboard, children, child-detail, ui
+│       ├── lib/               # api.ts, auth.ts, utils.ts
 │       └── types/
 ├── docker-compose.yml
 └── README.md
@@ -68,96 +68,84 @@ painel-prefeitura/
 | `PATCH` | `/children/:id/review` | ✅ | Registra revisão do caso |
 
 ### Filtros disponíveis em `GET /children`
+- `nome` — busca por nome (case insensitive, busca parcial)
 - `bairro` — filtra por bairro
-- `alertas` — `true` (com alertas) | `false` (sem alertas)
+- `area` — `saude` | `educacao` | `social` (filtra crianças com alerta nessa área específica)
+- `alertas` — `true` (com qualquer alerta) | `false` (sem alertas)
 - `revisado` — `true` (revisados) | `false` (pendentes)
 - `page` — número da página (default: 1)
 - `limit` — itens por página (default: 12, max: 50)
 
 ### JWT
-O token contém o campo `preferred_username` com o e-mail do técnico autenticado, expiração de 8h.
+O token contém o campo `preferred_username` com o e-mail do técnico autenticado. Expiração de 8h.
 
 ---
 
 ## Decisões arquiteturais e trade-offs
 
-### Backend: Node.js + Fastify (em vez de Go)
+### Backend: Node.js + Fastify + TypeScript
 
-**Por quê:** O desafio permite Node.js ou Go. Optei por Node.js com TypeScript por:
-- Tipagem compartilhada entre frontend e backend (`types/index.ts`)
-- Fastify tem performance comparável ao Gin e ecossistema TypeScript maduro
-- Prisma oferece migrações seguras e ORM tipado
+O desafio permite Node.js ou Go. Escolhi Node.js com TypeScript por dois motivos principais: mesma linguagem do frontend, permitindo compartilhar tipos entre as duas camadas sem duplicação; e ecossistema maduro para o que o projeto precisava (JWT, ORM, validação). Fastify foi escolhido sobre Express por ter melhor performance nativa e suporte a TypeScript mais direto.
 
-**Trade-off:** Go teria menor uso de memória e startup mais rápido. Para um sistema de prefeitura com dezenas de usuários simultâneos, ambas são escolhas válidas.
+**Trade-off:** Go teria consumo de memória menor e startup mais rápido. Para o volume de usuários de um sistema municipal com dezenas de técnicos simultâneos, ambas as escolhas são tecnicamente adequadas.
 
-### Banco: PostgreSQL + Prisma
+### Banco de dados: PostgreSQL + Prisma
 
-**Por quê:** O seed tem dados relacionais (crianças ↔ saúde/educação/social ↔ revisões). PostgreSQL suporta arrays nativos (`String[]`), o que simplifica os campos `alertas` e `beneficios` sem tabela extra.
+Os dados têm relacionamentos claros (criança → saúde/educação/social → revisões) e o PostgreSQL suporta arrays nativos (`String[]`), o que simplificou o armazenamento dos campos `alertas` e `beneficios` sem precisar de tabela extra. Prisma oferece migrações versionadas e cliente totalmente tipado.
 
-**Trade-off:** SQLite seria mais simples para desenvolvimento local mas não suporta arrays nativos, exigindo mudança de schema.
+**Trade-off:** SQLite seria mais simples para desenvolvimento local, mas não suporta arrays nativos e não reflete um ambiente de produção real.
 
-### Autenticação: JWT em localStorage
+### Seed: seed.json carregado via script TypeScript
 
-**Por quê:** Simplicidade de implementação para o desafio. O token tem 8h de expiração e é validado a cada navegação.
+O arquivo `data/seed.json` é lido pelo script `prisma/seed.ts` na inicialização do container. A decisão foi manter os dados de seed separados do código para facilitar a substituição por dados reais no futuro, e usar um script TypeScript em vez de SQL puro para ter validação de tipos na importação.
 
-**Em produção:** Usaria `httpOnly cookies` para proteção contra XSS, com refresh token.
+### Frontend: Next.js 14 App Router + Tailwind CSS + shadcn/ui
 
-### API Proxy via Next.js rewrites
+Next.js foi requisito do desafio. App Router permite colocação de layouts por segmento de rota, o que simplificou a proteção de rotas autenticadas via layout wrapper. Tailwind CSS foi requisito. shadcn/ui foi usado como diferencial solicitado no desafio — os componentes base (toast, toaster) foram implementados manualmente seguindo o padrão shadcn.
 
-**Por quê:** Em vez de expor `NEXT_PUBLIC_API_URL`, o frontend faz chamadas para `/api/*` e o Next.js proxia internamente para `http://backend:3001`. Elimina CORS e não expõe a URL do backend no bundle JS.
+### Proxy de API via Next.js rewrites
 
-### Campos ausentes nas 3 áreas
+O frontend não chama o backend diretamente pelo IP/porta. As chamadas vão para `/api/*` e o Next.js proxia internamente para `http://backend:3001`. Isso elimina CORS, não expõe a URL do backend no bundle JavaScript e permite trocar o endereço do backend sem alterar o frontend.
 
-Crianças sem dados em uma área retornam `null` para aquela área. O frontend renderiza um estado explícito ("Sem dados de saúde") em vez de campo em branco, com a informação de que a criança não está cadastrada naquela área.
+### Autenticação: JWT armazenado em localStorage
 
-### Campo `temAlerta` no banco
+JWT com expiração de 8h. A escolha por localStorage foi pragmática para o escopo do desafio. A página verifica o token a cada navegação e a cada 60 segundos em background, redirecionando para login se expirado.
 
-Adicionado campo booleano `temAlerta` em cada tabela de área para evitar queries com `array_length` ou `IS NOT EMPTY` que variam por banco. Simplifica filtros e o endpoint de summary.
+**Em produção:** usaria `httpOnly cookies` para proteção contra XSS, com endpoint de refresh token para renovação automática sem re-login.
+
+### Campo `temAlerta` desnormalizado
+
+Cada tabela de área (Saude, Educacao, AssistenciaSocial) tem um campo booleano `temAlerta` calculado no momento do seed. Isso evita queries com `array_length` ou `cardinality` no banco a cada requisição e simplifica os filtros. O trade-off é que esse campo precisa ser atualizado sempre que os alertas mudarem — aceitável para um sistema onde os dados vêm de importação periódica.
 
 ---
 
 ## Casos-limite do seed
 
-O `data/seed.json` foi construído com casos intencionais:
+O `data/seed.json` cobre os casos-limite mencionados no desafio:
 
 | Caso | Crianças |
 |------|----------|
 | Sem dados em nenhuma área | Carlos Eduardo (#6), Camila Souza (#15) |
-| Alertas em todas as 3 áreas | Pedro Henrique (#2), Diego Lima (#10), Emily Rodrigues (#23) |
+| Alertas nas 3 áreas simultaneamente | Pedro Henrique (#2), Diego Lima (#10), Emily Rodrigues (#23) |
 | Somente dados de saúde | Luiza Santos (#3) |
 | Somente dados de educação | Gabriel Oliveira (#4), Sophia Lima (#19) |
-| Somente dados de assist. social | Mariana Costa (#5) |
+| Somente dados de assistência social | Mariana Costa (#5) |
 | Sem alertas em nenhuma área | Leticia Rodrigues (#9), Enzo Santos (#18) |
-| Frequência escolar crítica (<50%) | Diego Lima (#10) |
+| Frequência escolar crítica abaixo de 50% | Diego Lima (#10) |
+| Benefício cancelado + alertas múltiplos | Emily Rodrigues (#23) |
+
+Crianças sem dados em uma área exibem estado explícito ("Sem dados de saúde") em vez de campo em branco, com indicação de que a criança não está cadastrada naquela área.
 
 ---
 
 ## O que faria diferente com mais tempo
 
-1. **Testes** — Jest no backend (rotas, seed, JWT), Vitest + Testing Library no frontend, Playwright para E2E (login → revisão)
-2. **httpOnly cookies** — em vez de localStorage para o JWT
-3. **Refresh token** — renovação automática antes da expiração, sem re-login forçado
-4. **RBAC** — diferentes perfis (técnico, supervisor, admin) com permissões distintas
-5. **Auditoria completa** — log de todos os acessos e alterações
-6. **Cache** — Redis para o endpoint `/summary` que faz múltiplas queries agregadas
-7. **Filtro por área** — filtrar crianças por status em área específica (ex: só com alertas de saúde)
-8. **PWA** — service worker para acesso offline em campo, sincronização quando voltar online
-9. **Deploy** — CI/CD com GitHub Actions → Render (backend) + Vercel (frontend)
-10. **Paginação infinita** — para listas longas em mobile em vez de paginação numérica
+**Testes:** o projeto não tem cobertura de testes automatizados. Implementaria testes unitários no backend com Jest (rotas, validação de JWT, seed), testes de componente no frontend com Vitest e Testing Library, e testes E2E com Playwright cobrindo o fluxo completo de login até marcar um caso como revisado.
 
----
+**Segurança:** substituiria o localStorage por httpOnly cookies para o JWT, eliminando a superfície de ataque XSS. Adicionaria refresh token para renovação automática da sessão.
 
-## Dark mode
+**Deploy:** configuraria CI/CD com GitHub Actions publicando o backend no Render e o frontend na Vercel, com URL pública acessível sem configuração local.
 
-O sistema suporta dark mode completo com detecção automática da preferência do sistema operacional. O toggle está disponível no header e na tela de login.
+**PWA:** para técnicos de campo que trabalham em áreas com conexão instável, um service worker com cache offline permitiria consultar os dados sem internet e sincronizar as revisões ao reconectar.
 
----
-
-## Acessibilidade
-
-- Navegação por teclado em todos os elementos interativos
-- `aria-label` em botões sem texto visível
-- `role="alert"` e `aria-live` em mensagens de erro e status
-- `aria-current="page"` na navegação
-- `role="progressbar"` na barra de frequência
-- Contraste adequado em light e dark mode
+**Performance:** adicionaria cache com Redis para o endpoint `/summary`, que agrega múltiplas queries. Para listas longas em mobile, paginação infinita (scroll) seria mais ergonômica que a paginação numérica atual.
