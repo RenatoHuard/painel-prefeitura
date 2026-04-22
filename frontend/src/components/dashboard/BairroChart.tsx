@@ -7,7 +7,6 @@ import {
   YAxis,
   Tooltip,
   ResponsiveContainer,
-  Cell,
 } from 'recharts'
 import type { Summary } from '@/types'
 
@@ -53,21 +52,15 @@ export function BairroChart({ summary }: Props) {
               allowDecimals={false}
             />
             <Tooltip
-              cursor={{ fill: 'hsl(var(--muted))', radius: 4 }}
               contentStyle={{
                 backgroundColor: 'hsl(var(--card))',
                 border: '1px solid hsl(var(--border))',
                 borderRadius: '8px',
                 fontSize: '12px',
               }}
-              formatter={(value: number, name: string) => [
-                `${value} criança${value !== 1 ? 's' : ''}`,
-                name === 'comAlertas' ? 'Com alertas' : 'Sem alertas',
-              ]}
-              labelFormatter={(_, payload) => payload?.[0]?.payload?.fullName ?? ''}
             />
-            <Bar dataKey="comAlertas" stackId="a" radius={[0, 0, 0, 0]} fill="#f97316" />
-            <Bar dataKey="semAlertas" stackId="a" radius={[4, 4, 0, 0]} fill="hsl(var(--muted))" />
+            <Bar dataKey="comAlertas" name="Com alertas" stackId="a" fill="#f97316" />
+            <Bar dataKey="semAlertas" name="Sem alertas" stackId="a" radius={[4, 4, 0, 0]} fill="hsl(var(--muted))" />
           </BarChart>
         </ResponsiveContainer>
       )}
