@@ -3,8 +3,6 @@
 import dynamic from 'next/dynamic'
 import type { Summary } from '@/types'
 
-// Leaflet não funciona no servidor (usa window/document)
-// dynamic com ssr:false garante renderização só no cliente
 const MapaCalorCliente = dynamic(
   () => import('./MapaCalorCliente'),
   {
@@ -12,7 +10,7 @@ const MapaCalorCliente = dynamic(
     loading: () => (
       <div className="bg-card border border-border rounded-xl p-5">
         <h2 className="font-semibold text-card-foreground mb-1">Mapa de Calor por Bairro</h2>
-        <div className="h-80 flex items-center justify-center text-muted-foreground text-sm">
+        <div className="h-80 flex items-center justify-center text-muted-foreground text-sm animate-pulse">
           Carregando mapa...
         </div>
       </div>
@@ -20,8 +18,6 @@ const MapaCalorCliente = dynamic(
   }
 )
 
-interface Props { summary: Summary }
-
-export function MapaCalor({ summary }: Props) {
+export function MapaCalor({ summary }: { summary: Summary }) {
   return <MapaCalorCliente summary={summary} />
 }
