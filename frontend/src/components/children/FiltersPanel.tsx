@@ -18,7 +18,6 @@ interface Props {
 const selectCls = "w-full px-3 py-2 rounded-md border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring"
 
 export function FiltersPanel({ filters, onFilterChange }: Props) {
-  // Debounce nome input
   const [nomeInput, setNomeInput] = useState(filters.nome ?? '')
 
   useEffect(() => {
@@ -30,22 +29,30 @@ export function FiltersPanel({ filters, onFilterChange }: Props) {
     return () => clearTimeout(timer)
   }, [nomeInput])
 
-  // Sync if external reset
-  useEffect(() => {
-    setNomeInput(filters.nome ?? '')
-  }, [filters.nome])
+  useEffect(() => { setNomeInput(filters.nome ?? '') }, [filters.nome])
+
+  // Valor composto para o select de alertas (inclui semDados)
+  const alertasValue = filters.semDados === 'true' ? 'semDados' : filters.alertas
+
+  function handleAlertasChange(val: string) {
+    if (val === 'semDados') {
+      onFilterChange({ semDados: 'true', alertas: 'todos', area: 'todos' })
+    } else {
+      onFilterChange({ alertas: val, semDados: undefined, area: 'todos' })
+    }
+  }
 
   const activeCount = [
     (filters.nome ?? '') !== '',
     filters.bairro !== 'todos',
-    filters.alertas !== 'todos',
+    alertasValue !== 'todos',
     (filters.area ?? 'todos') !== 'todos',
     filters.revisado !== 'todos',
   ].filter(Boolean).length
 
   function reset() {
     setNomeInput('')
-    onFilterChange({ bairro: 'todos', alertas: 'todos', revisado: 'todos', area: 'todos', nome: '' })
+    onFilterChange({ bairro: 'todos', alertas: 'todos', revisado: 'todos', area: 'todos', nome: '', semDados: undefined })
   }
 
   return (
@@ -66,15 +73,13 @@ export function FiltersPanel({ filters, onFilterChange }: Props) {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
-        {/* Busca por nome */}
+        {/* Nome */}
         <div className="space-y-1 sm:col-span-2 lg:col-span-1">
           <label className="text-xs font-medium text-muted-foreground" htmlFor="filter-nome">Buscar por nome</label>
           <div className="relative">
             <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground pointer-events-none" />
             <input
-              id="filter-nome"
-              type="text"
-              value={nomeInput}
+              id="filter-nome" type="text" value={nomeInput}
               onChange={(e) => setNomeInput(e.target.value)}
               placeholder="Nome da criança..."
               className="w-full pl-8 pr-3 py-2 rounded-md border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring placeholder:text-muted-foreground"
@@ -90,28 +95,31 @@ export function FiltersPanel({ filters, onFilterChange }: Props) {
           </select>
         </div>
 
-        {/* Área */}
+        {/* Alertas — inclui "Sem dados" */}
+        <div className="space-y-1">
+          <label className="text-xs font-medium text-muted-foreground" htmlFor="filter-alertas">Alertas</label>
+          <select id="filter-alertas" value={alertasValue} onChange={(e) => handleAlertasChange(e.target.value)} className={selectCls}>
+            <option value="todos">Todos</option>
+            <option value="true">Com alertas ativos</option>
+            <option value="false">Sem alertas</option>
+            <option value="semDados">⊘ Sem dados cadastrados</option>
+          </select>
+        </div>
+
+        {/* Área — só visível quando alertas = com alertas ou todos */}
         <div className="space-y-1">
           <label className="text-xs font-medium text-muted-foreground" htmlFor="filter-area">Área de alerta</label>
-          <select id="filter-area" value={filters.area ?? 'todos'}
-            onChange={(e) => onFilterChange({ area: e.target.value, alertas: e.target.value !== 'todos' ? 'todos' : filters.alertas })}
-            className={selectCls}>
+          <select
+            id="filter-area"
+            value={filters.semDados === 'true' ? 'todos' : (filters.area ?? 'todos')}
+            onChange={(e) => onFilterChange({ area: e.target.value, semDados: undefined })}
+            disabled={filters.semDados === 'true'}
+            className={`${selectCls} disabled:opacity-40`}
+          >
             <option value="todos">Todas as áreas</option>
             <option value="saude">⚕ Saúde</option>
             <option value="educacao">📚 Educação</option>
             <option value="social">🤝 Assist. Social</option>
-          </select>
-        </div>
-
-        {/* Alertas */}
-        <div className="space-y-1">
-          <label className="text-xs font-medium text-muted-foreground" htmlFor="filter-alertas">Alertas</label>
-          <select id="filter-alertas" value={filters.alertas}
-            onChange={(e) => onFilterChange({ alertas: e.target.value, area: 'todos' })}
-            className={selectCls}>
-            <option value="todos">Todos</option>
-            <option value="true">Com alertas</option>
-            <option value="false">Sem alertas</option>
           </select>
         </div>
 
