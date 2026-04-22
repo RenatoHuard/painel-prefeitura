@@ -1,7 +1,8 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import type { Filters } from '@/types'
-import { Filter, X } from 'lucide-react'
+import { Filter, X, Search } from 'lucide-react'
 
 const BAIRROS = [
   'todos','Acari','Anchieta','Bangu','Campo Grande','Complexo do Alemão',
@@ -17,15 +18,34 @@ interface Props {
 const selectCls = "w-full px-3 py-2 rounded-md border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring"
 
 export function FiltersPanel({ filters, onFilterChange }: Props) {
+  // Debounce nome input
+  const [nomeInput, setNomeInput] = useState(filters.nome ?? '')
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (nomeInput !== (filters.nome ?? '')) {
+        onFilterChange({ nome: nomeInput })
+      }
+    }, 350)
+    return () => clearTimeout(timer)
+  }, [nomeInput])
+
+  // Sync if external reset
+  useEffect(() => {
+    setNomeInput(filters.nome ?? '')
+  }, [filters.nome])
+
   const activeCount = [
+    (filters.nome ?? '') !== '',
     filters.bairro !== 'todos',
     filters.alertas !== 'todos',
-    filters.revisado !== 'todos',
     (filters.area ?? 'todos') !== 'todos',
+    filters.revisado !== 'todos',
   ].filter(Boolean).length
 
   function reset() {
-    onFilterChange({ bairro: 'todos', alertas: 'todos', revisado: 'todos', area: 'todos' })
+    setNomeInput('')
+    onFilterChange({ bairro: 'todos', alertas: 'todos', revisado: 'todos', area: 'todos', nome: '' })
   }
 
   return (
@@ -35,9 +55,7 @@ export function FiltersPanel({ filters, onFilterChange }: Props) {
           <Filter className="w-4 h-4 text-muted-foreground" />
           Filtros
           {activeCount > 0 && (
-            <span className="px-1.5 py-0.5 rounded-full bg-primary text-primary-foreground text-xs font-medium">
-              {activeCount}
-            </span>
+            <span className="px-1.5 py-0.5 rounded-full bg-primary text-primary-foreground text-xs font-medium">{activeCount}</span>
           )}
         </div>
         {activeCount > 0 && (
@@ -47,7 +65,23 @@ export function FiltersPanel({ filters, onFilterChange }: Props) {
         )}
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+        {/* Busca por nome */}
+        <div className="space-y-1 sm:col-span-2 lg:col-span-1">
+          <label className="text-xs font-medium text-muted-foreground" htmlFor="filter-nome">Buscar por nome</label>
+          <div className="relative">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground pointer-events-none" />
+            <input
+              id="filter-nome"
+              type="text"
+              value={nomeInput}
+              onChange={(e) => setNomeInput(e.target.value)}
+              placeholder="Nome da criança..."
+              className="w-full pl-8 pr-3 py-2 rounded-md border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring placeholder:text-muted-foreground"
+            />
+          </div>
+        </div>
+
         {/* Bairro */}
         <div className="space-y-1">
           <label className="text-xs font-medium text-muted-foreground" htmlFor="filter-bairro">Bairro</label>
@@ -56,45 +90,32 @@ export function FiltersPanel({ filters, onFilterChange }: Props) {
           </select>
         </div>
 
-        {/* Área de alerta */}
+        {/* Área */}
         <div className="space-y-1">
-          <label className="text-xs font-medium text-muted-foreground" htmlFor="filter-area">Área</label>
-          <select
-            id="filter-area"
-            value={filters.area ?? 'todos'}
-            onChange={(e) => {
-              const val = e.target.value
-              // Se escolher área específica, limpa o filtro genérico de alertas
-              onFilterChange({ area: val, alertas: val !== 'todos' ? 'todos' : filters.alertas })
-            }}
-            className={selectCls}
-          >
+          <label className="text-xs font-medium text-muted-foreground" htmlFor="filter-area">Área de alerta</label>
+          <select id="filter-area" value={filters.area ?? 'todos'}
+            onChange={(e) => onFilterChange({ area: e.target.value, alertas: e.target.value !== 'todos' ? 'todos' : filters.alertas })}
+            className={selectCls}>
             <option value="todos">Todas as áreas</option>
-            <option value="saude">⚕ Alertas de Saúde</option>
-            <option value="educacao">📚 Alertas de Educação</option>
-            <option value="social">🤝 Alertas Assist. Social</option>
+            <option value="saude">⚕ Saúde</option>
+            <option value="educacao">📚 Educação</option>
+            <option value="social">🤝 Assist. Social</option>
           </select>
         </div>
 
-        {/* Alertas genérico */}
+        {/* Alertas */}
         <div className="space-y-1">
           <label className="text-xs font-medium text-muted-foreground" htmlFor="filter-alertas">Alertas</label>
-          <select
-            id="filter-alertas"
-            value={filters.alertas}
-            onChange={(e) => {
-              // Se escolher filtro genérico, limpa a área específica
-              onFilterChange({ alertas: e.target.value, area: 'todos' })
-            }}
-            className={selectCls}
-          >
+          <select id="filter-alertas" value={filters.alertas}
+            onChange={(e) => onFilterChange({ alertas: e.target.value, area: 'todos' })}
+            className={selectCls}>
             <option value="todos">Todos</option>
-            <option value="true">Com alertas ativos</option>
+            <option value="true">Com alertas</option>
             <option value="false">Sem alertas</option>
           </select>
         </div>
 
-        {/* Revisado */}
+        {/* Revisão */}
         <div className="space-y-1">
           <label className="text-xs font-medium text-muted-foreground" htmlFor="filter-revisado">Revisão</label>
           <select id="filter-revisado" value={filters.revisado} onChange={(e) => onFilterChange({ revisado: e.target.value })} className={selectCls}>

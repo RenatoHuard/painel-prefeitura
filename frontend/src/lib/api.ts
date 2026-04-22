@@ -5,12 +5,8 @@ const BASE = '/api'
 
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const token = getToken()
-  const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
-    ...(options.headers as Record<string, string>),
-  }
+  const headers: Record<string, string> = { 'Content-Type': 'application/json', ...(options.headers as Record<string, string>) }
   if (token) headers['Authorization'] = `Bearer ${token}`
-
   const res = await fetch(`${BASE}${path}`, { ...options, headers })
   if (res.status === 401) { logout(); throw new Error('Sessão expirada') }
   if (!res.ok) {
@@ -30,14 +26,14 @@ export async function getSummary(): Promise<Summary> {
 
 export async function getChildren(filters: Partial<Filters> = {}): Promise<ChildrenResponse> {
   const params = new URLSearchParams()
+  if (filters.nome && filters.nome.trim()) params.set('nome', filters.nome.trim())
   if (filters.bairro && filters.bairro !== 'todos') params.set('bairro', filters.bairro)
   if (filters.area && filters.area !== 'todos') params.set('area', filters.area)
   else if (filters.alertas && filters.alertas !== 'todos') params.set('alertas', filters.alertas)
   if (filters.revisado && filters.revisado !== 'todos') params.set('revisado', filters.revisado)
   if (filters.page) params.set('page', String(filters.page))
   params.set('limit', '12')
-  const query = params.toString()
-  return request<ChildrenResponse>(`/children${query ? `?${query}` : ''}`)
+  return request<ChildrenResponse>(`/children?${params.toString()}`)
 }
 
 export async function getChild(id: string): Promise<ChildDetail> {

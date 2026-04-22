@@ -9,21 +9,18 @@ import { ChildCard } from '@/components/children/ChildCard'
 import { Pagination } from '@/components/children/Pagination'
 import { Loader2, Users } from 'lucide-react'
 
-const DEFAULT_FILTERS: Filters = {
-  bairro: 'todos',
-  alertas: 'todos',
-  revisado: 'todos',
-  page: 1,
-}
-
 export default function ChildrenPage() {
   const searchParams = useSearchParams()
-  const [filters, setFilters] = useState<Filters>(() => ({
+
+  const [filters, setFilters] = useState<Filters>({
     bairro: searchParams.get('bairro') || 'todos',
     alertas: searchParams.get('alertas') || 'todos',
     revisado: searchParams.get('revisado') || 'todos',
+    area: searchParams.get('area') || 'todos',
+    nome: searchParams.get('nome') || '',
     page: 1,
-  }))
+  })
+
   const [response, setResponse] = useState<ChildrenResponse | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -41,9 +38,7 @@ export default function ChildrenPage() {
     }
   }, [filters])
 
-  useEffect(() => {
-    fetchChildren()
-  }, [fetchChildren])
+  useEffect(() => { fetchChildren() }, [fetchChildren])
 
   function handleFilterChange(newFilters: Partial<Filters>) {
     setFilters((prev) => ({ ...prev, ...newFilters, page: 1 }))
@@ -60,22 +55,15 @@ export default function ChildrenPage() {
         <h1 className="text-2xl font-bold text-foreground">Crianças Acompanhadas</h1>
         <p className="text-muted-foreground text-sm mt-1">
           {response ? (
-            <>
-              <span className="font-medium text-foreground">{response.total}</span> criança
-              {response.total !== 1 ? 's' : ''} encontrada{response.total !== 1 ? 's' : ''}
-            </>
-          ) : (
-            'Carregando...'
-          )}
+            <><span className="font-medium text-foreground">{response.total}</span> criança{response.total !== 1 ? 's' : ''} encontrada{response.total !== 1 ? 's' : ''}</>
+          ) : 'Carregando...'}
         </p>
       </div>
 
       <FiltersPanel filters={filters} onFilterChange={handleFilterChange} />
 
       {loading ? (
-        <div className="flex items-center justify-center py-24">
-          <Loader2 className="w-8 h-8 animate-spin text-primary" />
-        </div>
+        <div className="flex items-center justify-center py-24"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
       ) : error ? (
         <div className="text-center py-24 text-destructive">{error}</div>
       ) : response?.data.length === 0 ? (
@@ -86,17 +74,10 @@ export default function ChildrenPage() {
       ) : (
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
-            {response?.data.map((child) => (
-              <ChildCard key={child.id} child={child} />
-            ))}
+            {response?.data.map((child) => <ChildCard key={child.id} child={child} />)}
           </div>
-
           {response && response.totalPages > 1 && (
-            <Pagination
-              currentPage={response.page}
-              totalPages={response.totalPages}
-              onPageChange={handlePageChange}
-            />
+            <Pagination currentPage={response.page} totalPages={response.totalPages} onPageChange={handlePageChange} />
           )}
         </>
       )}

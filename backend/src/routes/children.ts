@@ -12,19 +12,11 @@ function getAreaStatus(temDados: boolean, temAlerta: boolean): 'ok' | 'alerta' |
 
 export async function childrenRoutes(app: FastifyInstance) {
   app.get<{
-    Querystring: {
-      bairro?: string
-      alertas?: string
-      revisado?: string
-      area?: string
-      page?: string
-      limit?: string
-    }
+    Querystring: { bairro?: string; alertas?: string; revisado?: string; area?: string; nome?: string; page?: string; limit?: string }
   }>('/', {
     preHandler: authenticate,
     handler: async (request, reply) => {
-      const { bairro, alertas, revisado, area, page = '1', limit = '12' } = request.query
-
+      const { bairro, alertas, revisado, area, nome, page = '1', limit = '12' } = request.query
       const pageNum = Math.max(1, parseInt(page))
       const limitNum = Math.min(50, Math.max(1, parseInt(limit)))
       const skip = (pageNum - 1) * limitNum
@@ -32,21 +24,21 @@ export async function childrenRoutes(app: FastifyInstance) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const where: any = {}
 
+      // Busca por nome (case insensitive)
+      if (nome && nome.trim()) {
+        where.nome = { contains: nome.trim(), mode: 'insensitive' }
+      }
+
       if (bairro && bairro !== 'todos') {
         where.bairro = bairro
       }
 
-      // Filtro por área específica com alerta
+      // Filtro por área específica
       if (area && area !== 'todos') {
-        if (area === 'saude') {
-          where.saude = { temAlerta: true }
-        } else if (area === 'educacao') {
-          where.educacao = { temAlerta: true }
-        } else if (area === 'social') {
-          where.assistenciaSocial = { temAlerta: true }
-        }
+        if (area === 'saude') where.saude = { temAlerta: true }
+        else if (area === 'educacao') where.educacao = { temAlerta: true }
+        else if (area === 'social') where.assistenciaSocial = { temAlerta: true }
       } else if (alertas === 'true') {
-        // Qualquer alerta
         where.OR = [
           { saude: { temAlerta: true } },
           { educacao: { temAlerta: true } },
@@ -60,46 +52,27 @@ export async function childrenRoutes(app: FastifyInstance) {
         ]
       }
 
-      if (revisado === 'true') {
-        where.revisoes = { some: {} }
-      } else if (revisado === 'false') {
-        where.revisoes = { none: {} }
-      }
+      if (revisado === 'true') where.revisoes = { some: {} }
+      else if (revisado === 'false') where.revisoes = { none: {} }
 
       const [children, total] = await Promise.all([
         prisma.child.findMany({
-          where,
-          skip,
-          take: limitNum,
-          orderBy: { nome: 'asc' },
+          where, skip, take: limitNum, orderBy: { nome: 'asc' },
           include: {
             saude: { select: { temAlerta: true, alertas: true } },
             educacao: { select: { temAlerta: true, alertas: true } },
             assistenciaSocial: { select: { temAlerta: true, alertas: true } },
-            revisoes: {
-              orderBy: { criadoEm: 'desc' },
-              take: 1,
-              include: { tecnico: { select: { email: true } } },
-            },
+            revisoes: { orderBy: { criadoEm: 'desc' }, take: 1, include: { tecnico: { select: { email: true } } } },
           },
         }),
         prisma.child.count({ where }),
       ])
 
       const data: ChildListItem[] = children.map((child) => {
-        const alertasCount = [
-          child.saude?.temAlerta,
-          child.educacao?.temAlerta,
-          child.assistenciaSocial?.temAlerta,
-        ].filter(Boolean).length
-
+        const alertasCount = [child.saude?.temAlerta, child.educacao?.temAlerta, child.assistenciaSocial?.temAlerta].filter(Boolean).length
         return {
-          id: child.id,
-          nome: child.nome,
-          dataNascimento: child.dataNascimento.toISOString(),
-          bairro: child.bairro,
-          responsavel: child.responsavel,
-          telefone: child.telefone,
+          id: child.id, nome: child.nome, dataNascimento: child.dataNascimento.toISOString(),
+          bairro: child.bairro, responsavel: child.responsavel, telefone: child.telefone,
           alertasCount,
           areas: {
             saude: getAreaStatus(!!child.saude, child.saude?.temAlerta ?? false),
@@ -122,48 +95,18 @@ export async function childrenRoutes(app: FastifyInstance) {
       const child = await prisma.child.findUnique({
         where: { id },
         include: {
-          saude: true,
-          educacao: true,
-          assistenciaSocial: true,
-          revisoes: {
-            orderBy: { criadoEm: 'desc' },
-            include: { tecnico: { select: { email: true, nome: true } } },
-          },
+          saude: true, educacao: true, assistenciaSocial: true,
+          revisoes: { orderBy: { criadoEm: 'desc' }, include: { tecnico: { select: { email: true, nome: true } } } },
         },
       })
       if (!child) return reply.status(404).send({ error: 'Criança não encontrada' })
-
       return reply.send({
-        id: child.id,
-        nome: child.nome,
-        dataNascimento: child.dataNascimento.toISOString(),
-        bairro: child.bairro,
-        responsavel: child.responsavel,
-        telefone: child.telefone,
-        saude: child.saude ? {
-          cartaoSus: child.saude.cartaoSus,
-          ultimaConsulta: child.saude.ultimaConsulta?.toISOString() ?? null,
-          vacinasEmDia: child.saude.vacinasEmDia,
-          alertas: child.saude.alertas,
-        } : null,
-        educacao: child.educacao ? {
-          escola: child.educacao.escola,
-          serie: child.educacao.serie,
-          frequenciaPercentual: child.educacao.frequenciaPercentual,
-          alertas: child.educacao.alertas,
-        } : null,
-        assistenciaSocial: child.assistenciaSocial ? {
-          nis: child.assistenciaSocial.nis,
-          beneficios: child.assistenciaSocial.beneficios,
-          statusBeneficios: child.assistenciaSocial.statusBeneficios,
-          alertas: child.assistenciaSocial.alertas,
-        } : null,
-        revisoes: child.revisoes.map((r) => ({
-          id: r.id,
-          tecnico: r.tecnico.email,
-          nomeTecnico: r.tecnico.nome,
-          criadoEm: r.criadoEm.toISOString(),
-        })),
+        id: child.id, nome: child.nome, dataNascimento: child.dataNascimento.toISOString(),
+        bairro: child.bairro, responsavel: child.responsavel, telefone: child.telefone,
+        saude: child.saude ? { cartaoSus: child.saude.cartaoSus, ultimaConsulta: child.saude.ultimaConsulta?.toISOString() ?? null, vacinasEmDia: child.saude.vacinasEmDia, alertas: child.saude.alertas } : null,
+        educacao: child.educacao ? { escola: child.educacao.escola, serie: child.educacao.serie, frequenciaPercentual: child.educacao.frequenciaPercentual, alertas: child.educacao.alertas } : null,
+        assistenciaSocial: child.assistenciaSocial ? { nis: child.assistenciaSocial.nis, beneficios: child.assistenciaSocial.beneficios, statusBeneficios: child.assistenciaSocial.statusBeneficios, alertas: child.assistenciaSocial.alertas } : null,
+        revisoes: child.revisoes.map((r) => ({ id: r.id, tecnico: r.tecnico.email, nomeTecnico: r.tecnico.nome, criadoEm: r.criadoEm.toISOString() })),
       })
     },
   })
@@ -181,10 +124,7 @@ export async function childrenRoutes(app: FastifyInstance) {
         data: { childId: id, tecnicoId: tecnico.id },
         include: { tecnico: { select: { email: true, nome: true } } },
       })
-      return reply.send({
-        success: true,
-        revisao: { id: revisao.id, tecnico: revisao.tecnico.email, nomeTecnico: revisao.tecnico.nome, criadoEm: revisao.criadoEm.toISOString() },
-      })
+      return reply.send({ success: true, revisao: { id: revisao.id, tecnico: revisao.tecnico.email, nomeTecnico: revisao.tecnico.nome, criadoEm: revisao.criadoEm.toISOString() } })
     },
   })
 }
