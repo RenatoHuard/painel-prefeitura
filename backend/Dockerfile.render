@@ -9,7 +9,6 @@ RUN npm install
 
 COPY . .
 
-# Copia seed.json embutido (já está em prisma/seed-data.json)
 RUN npx prisma generate
 RUN npm run build
 
@@ -23,6 +22,8 @@ COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/package*.json ./
+# Copia seed.json para /app/data/seed.json (caminho esperado pelo seed.ts)
+COPY --from=builder /app/seed.json ./data/seed.json
 
 EXPOSE 3001
 
