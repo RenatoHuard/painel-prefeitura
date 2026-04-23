@@ -5,19 +5,39 @@ const BASE = '/api'
 
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const token = getToken()
-  const headers: Record<string, string> = { 'Content-Type': 'application/json', ...(options.headers as Record<string, string>) }
-  if (token) headers['Authorization'] = `Bearer ${token}`
+  const headers: Record<string, string> = {
+    ...(options.headers as Record<string, string>),
+  }
+
+  // Só define Content-Type quando há body
+  if (options.body) {
+    headers['Content-Type'] = 'application/json'
+  }
+
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`
+  }
+
   const res = await fetch(`${BASE}${path}`, { ...options, headers })
-  if (res.status === 401) { logout(); throw new Error('Sessão expirada') }
+
+  if (res.status === 401) {
+    logout()
+    throw new Error('Sessão expirada')
+  }
+
   if (!res.ok) {
     const err = await res.json().catch(() => ({ error: 'Erro desconhecido' }))
     throw new Error(err.error || `Erro ${res.status}`)
   }
+
   return res.json()
 }
 
 export async function login(email: string, password: string): Promise<AuthResponse> {
-  return request<AuthResponse>('/auth/token', { method: 'POST', body: JSON.stringify({ email, password }) })
+  return request<AuthResponse>('/auth/token', {
+    method: 'POST',
+    body: JSON.stringify({ email, password }),
+  })
 }
 
 export async function getSummary(): Promise<Summary> {
@@ -46,5 +66,8 @@ export async function getChild(id: string): Promise<ChildDetail> {
 }
 
 export async function reviewChild(id: string) {
-  return request<{ success: boolean; revisao: { id: string; tecnico: string; criadoEm: string } }>(`/children/${id}/review`, { method: 'PATCH' })
+  return request<{ success: boolean; revisao: { id: string; tecnico: string; criadoEm: string } }>(
+    `/children/${id}/review`,
+    { method: 'PATCH' } // sem body, sem Content-Type
+  )
 }
