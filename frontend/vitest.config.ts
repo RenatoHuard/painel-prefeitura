@@ -8,10 +8,12 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: ['./src/__tests__/setup.ts'],
     globals: true,
+    // Exclui arquivos E2E do Playwright
+    exclude: ['node_modules', 'e2e/**', '**/*.spec.ts'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'lcov'],
-      exclude: ['node_modules', '.next', 'src/__tests__'],
+      exclude: ['node_modules', '.next', 'src/__tests__', 'e2e'],
     },
   },
   resolve: {

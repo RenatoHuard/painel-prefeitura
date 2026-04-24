@@ -1,13 +1,10 @@
 import { test, expect } from '@playwright/test'
+import { doLogin } from './helpers'
 
 test.describe('Dashboard', () => {
   test.beforeEach(async ({ page }) => {
-    // Login antes de cada teste
-    await page.goto('/login')
-    await page.getByLabel('E-mail funcional').fill('tecnico@prefeitura.rio')
-    await page.getByLabel('Senha').fill('painel@2024')
-    await page.getByRole('button', { name: 'Entrar' }).click()
-    await expect(page).toHaveURL('/dashboard')
+    await doLogin(page)
+    await page.waitForURL('/dashboard')
   })
 
   test('exibe os cards de resumo', async ({ page }) => {
@@ -29,7 +26,7 @@ test.describe('Dashboard', () => {
   test('clicar em "Com Alertas Ativos" navega para lista filtrada', async ({ page }) => {
     await page.getByRole('button', { name: /com alertas ativos/i }).click()
     await expect(page).toHaveURL(/\/children\?alertas=true/)
-    await expect(page.getByText('Crianças Acompanhadas')).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Crianças Acompanhadas' })).toBeVisible()
   })
 
   test('clicar em "Alertas — Saúde" navega para lista filtrada por saúde', async ({ page }) => {

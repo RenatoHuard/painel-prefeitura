@@ -10,12 +10,16 @@ const inter = Inter({ subsets: ['latin'] })
 export const metadata: Metadata = {
   title: 'Painel de Acompanhamento | Prefeitura',
   description: 'Painel para acompanhamento de crianças em vulnerabilidade social',
+  icons: {
+    icon: '/favicon.svg',
+  },
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="pt-BR" suppressHydrationWarning>
       <head>
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
         <link
           rel="stylesheet"
           href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
@@ -23,7 +27,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body className={inter.className}>
-        {/* Leaflet carregado via CDN — evita bundle do webpack */}
         <Script
           src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
           strategy="beforeInteractive"
