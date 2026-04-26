@@ -1,10 +1,9 @@
 import { test, expect } from '@playwright/test'
-import { doLogin } from './helpers'
 
 test.describe('Dashboard', () => {
   test.beforeEach(async ({ page }) => {
-    await doLogin(page)
-    await page.waitForURL('/dashboard')
+    await page.goto('/dashboard')
+    await expect(page.getByRole('heading', { name: 'Painel Geral' })).toBeVisible({ timeout: 10000 })
   })
 
   test('exibe os cards de resumo', async ({ page }) => {

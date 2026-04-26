@@ -18,9 +18,9 @@ Sistema para técnicos de campo acompanharem crianças em situação de vulnerab
 | E-mail | `tecnico@prefeitura.rio` |
 | Senha | `painel@2024` |
 
-> ⚠️ **Atenção — primeiro acesso online:** o backend está hospedado no plano gratuito do Render, que adormece após períodos de inatividade. A primeira requisição após um período sem uso pode demorar até 60 segundos. As requisições seguintes são rápidas. Aguarde o login carregar na primeira vez.
+> ⚠️ **Primeiro acesso online:** o backend está no plano gratuito do Render, que adormece após períodos de inatividade. A primeira requisição pode demorar até 60 segundos. As seguintes são rápidas.
 
-> ⚠️ **Dados independentes:** o banco de dados local (Docker) e o banco online (Render) são instâncias separadas. Revisões feitas no localhost não aparecem no deploy público e vice-versa.
+> ⚠️ **Dados independentes:** o banco local (Docker) e o banco online (Render) são instâncias separadas. Revisões feitas no localhost não aparecem no deploy público e vice-versa.
 
 ---
 
@@ -80,13 +80,18 @@ npx playwright install  # apenas na primeira vez
 npm run test:e2e
 ```
 
-Os testes E2E cobrem (em Chromium e Mobile):
+O relatório HTML abre automaticamente no browser ao final de cada execução.
+
+Os testes cobrem (em Chromium e Mobile/iPhone 12):
 - Login com credenciais corretas e inválidas
 - Proteção de rotas sem autenticação
-- Cards do dashboard e navegação com filtros
-- Lista de crianças com filtros (bairro, alertas, área, nome)
-- Detalhe da criança e registro de revisão
-- Responsividade mobile (iPhone 12)
+- Cards do dashboard clicáveis com navegação para filtros corretos
+- Lista de crianças com filtros por bairro, alertas e nome
+- Detalhe da criança com as 3 áreas
+- Registro de revisão com feedback visual
+- Responsividade mobile
+
+> O Playwright usa `storageState` para autenticar uma vez antes de todos os testes, evitando login repetido e tornando a suite mais rápida e confiável.
 
 ---
 
@@ -109,10 +114,11 @@ painel-prefeitura/
 │   │   ├── routes/                # auth, children, summary
 │   │   ├── middleware/            # autenticação JWT
 │   │   └── server.ts
-│   ├── Dockerfile                 # Para Docker Compose local
-│   └── Dockerfile.render          # Para deploy no Render
+│   ├── Dockerfile                 # Docker Compose local
+│   └── Dockerfile.render          # Deploy no Render
 ├── frontend/
 │   ├── e2e/                       # Testes Playwright
+│   │   ├── global.setup.ts        # Setup de autenticação global
 │   │   ├── auth.spec.ts
 │   │   ├── dashboard.spec.ts
 │   │   ├── children.spec.ts
@@ -123,7 +129,18 @@ painel-prefeitura/
 │       │   ├── utils.test.ts
 │       │   └── components/
 │       ├── app/                   # Pages Next.js App Router
-│       ├── components/            # Componentes UI
+│       ├── components/
+│       │   ├── ui/                # Componentes shadcn/ui
+│       │   │   ├── button.tsx
+│       │   │   ├── card.tsx
+│       │   │   ├── badge.tsx
+│       │   │   ├── input.tsx
+│       │   │   ├── label.tsx
+│       │   │   └── select.tsx
+│       │   ├── layout/            # Header, Sidebar, ThemeToggle
+│       │   ├── dashboard/         # SummaryCards, AlertsChart, BairroChart, MapaCalor
+│       │   ├── children/          # ChildCard, FiltersPanel, Pagination
+│       │   └── child-detail/      # HealthSection, EducationSection, SocialSection, ReviewButton
 │       ├── lib/                   # api.ts, auth.ts, utils.ts
 │       └── types/
 ├── docker-compose.yml
@@ -148,7 +165,7 @@ painel-prefeitura/
 |-----------|---------|-----------|
 | `nome` | string | Busca parcial, case insensitive |
 | `bairro` | nome do bairro | Filtra por bairro |
-| `area` | `saude` \| `educacao` \| `social` | Filtra por alerta em área específica |
+| `area` | `saude` \| `educacao` \| `social` | Alerta em área específica |
 | `alertas` | `true` \| `false` | Com ou sem qualquer alerta |
 | `semDados` | `true` | Sem dados em nenhuma área |
 | `revisado` | `true` \| `false` | Status de revisão |
@@ -156,7 +173,7 @@ painel-prefeitura/
 | `limit` | número | Itens por página (default: 12, max: 50) |
 
 ### JWT
-O token contém o campo `preferred_username` com o e-mail do técnico autenticado. Expiração de 8h.
+Contém `preferred_username` com o e-mail do técnico autenticado. Expiração de 8h.
 
 ---
 
@@ -165,40 +182,54 @@ O token contém o campo `preferred_username` com o e-mail do técnico autenticad
 **Autenticação**
 - Login com JWT (expiração 8h)
 - Proteção de rotas com redirecionamento automático
-- Verificação periódica de expiração do token (a cada 60 segundos)
+- Verificação periódica de expiração (a cada 60 segundos)
+- Campo `autocomplete` nos inputs para gerenciadores de senha
 
 **Dashboard**
-- Cards de resumo clicáveis (total, alertas, revisados, sem dados)
+- Cards de resumo clicáveis — navegam para a lista com o filtro correspondente aplicado
 - Gráfico de pizza — alertas por área (Saúde, Educação, Assist. Social)
 - Gráfico de barras — alertas por bairro (top 8)
-- Mapa de calor — bairros coloridos por intensidade de alertas (Leaflet + OpenStreetMap)
+- Mapa de calor — bairros coloridos por intensidade de alertas (Leaflet + OpenStreetMap, sem chave de API)
 
 **Lista de Crianças**
-- Filtro por nome (busca parcial com debounce de 350ms)
+- Busca por nome (parcial, debounce 350ms, case insensitive)
 - Filtro por bairro
-- Filtro por alertas (com alertas / sem alertas / sem dados cadastrados)
+- Filtro por alertas: com alertas / sem alertas / ⊘ sem dados cadastrados
 - Filtro por área de alerta (saúde / educação / assistência social)
 - Filtro por status de revisão
 - Paginação (12 por página)
-- Badge visual diferenciado: `alerta` (âmbar), `ok` (verde), `sem dados` (cinza com ícone ⊘)
+- Badge visual diferenciado: `alerta` (âmbar), `ok` (verde), `sem dados` (cinza com ⊘)
 
 **Detalhe da Criança**
-- Exibição das 3 áreas (saúde, educação, assistência social)
-- Estado explícito "Sem dados cadastrados" para áreas sem registro
+- Exibição das 3 áreas com estado explícito para áreas sem registro
 - Barra de frequência escolar com indicador visual de criticidade
 - Status dos benefícios com badge colorido (ativo/suspenso/cancelado)
-- Histórico de revisões com data e técnico responsável
-- Botão "Marcar como Revisado" com feedback visual de sucesso/erro
+- Histórico de revisões
+- Botão "Marcar como Revisado" com feedback visual
 
-**Dark mode**
-- Detecção automática da preferência do sistema
-- Toggle manual disponível no header e na tela de login
-- Cores da Prefeitura do Rio na tela de login (azul #005B9A e verde #00A86B)
+**Interface**
+- Dark mode com detecção automática da preferência do sistema
+- Tela de login com identidade visual da Prefeitura do Rio (azul #005B9A, verde #00A86B)
+- Responsivo de 375px (mobile) a 1440px (desktop)
+- Componentes shadcn/ui: Button, Card, Badge, Input, Label, Select
+- Skip link para navegação por teclado (WCAG 2.4.1)
+- `aria-label`, `aria-hidden`, `aria-expanded`, `aria-current` em todos os elementos relevantes
+- Favicon personalizado
 
-**Responsividade**
-- Layout adaptado de 375px (mobile) a 1440px (desktop)
-- Menu lateral colapsável no mobile
-- Cards em grid responsivo (1/2/3 colunas)
+---
+
+## Diferenciais implementados
+
+| Diferencial | Status |
+|---|---|
+| shadcn/ui | ✅ Button, Card, Badge, Input, Label, Select |
+| Testes unitários backend (Jest) | ✅ 18 testes |
+| Testes de componente frontend (Vitest) | ✅ 27 testes |
+| Testes E2E (Playwright) | ✅ 38 testes — Chromium + Mobile |
+| Acessibilidade WCAG AA | ✅ Skip link, ARIA, focus visible |
+| Visualizações | ✅ Gráfico pizza, barras e mapa de calor |
+| Dark mode | ✅ Com detecção automática |
+| Deploy público | ✅ https://desafiorj.renatohuard.com.br |
 
 ---
 
@@ -221,45 +252,41 @@ O token contém o campo `preferred_username` com o e-mail do técnico autenticad
 
 ### Backend: Node.js + Fastify + TypeScript
 
-O desafio permite Node.js ou Go. Escolhi Node.js com TypeScript por dois motivos principais: mesma linguagem do frontend, permitindo compartilhar tipos entre as duas camadas sem duplicação; e ecossistema maduro para o que o projeto precisava (JWT, ORM, validação). Fastify foi escolhido sobre Express por ter melhor performance nativa e suporte a TypeScript mais direto.
+O desafio permite Node.js ou Go. Escolhi Node.js com TypeScript pela mesma linguagem do frontend, permitindo compartilhar tipos entre as duas camadas. Fastify foi escolhido sobre Express por melhor performance nativa e suporte TypeScript mais direto.
 
-**Trade-off:** Go teria consumo de memória menor e startup mais rápido. Para o volume de usuários de um sistema municipal com dezenas de técnicos simultâneos, ambas as escolhas são tecnicamente adequadas.
+**Trade-off:** Go teria consumo de memória menor e startup mais rápido. Para o volume de usuários de um sistema municipal, ambas são adequadas.
 
 ### Banco de dados: PostgreSQL + Prisma
 
-Os dados têm relacionamentos claros (criança → saúde/educação/social → revisões) e o PostgreSQL suporta arrays nativos (`String[]`), o que simplificou o armazenamento dos campos `alertas` e `beneficios` sem precisar de tabela extra. Prisma oferece migrações versionadas e cliente totalmente tipado.
+Relacionamentos claros (criança → saúde/educação/social → revisões) e suporte nativo a arrays no PostgreSQL simplificou os campos `alertas` e `beneficios`. Prisma oferece migrações versionadas e cliente tipado.
 
-**Trade-off:** SQLite seria mais simples para desenvolvimento local, mas não suporta arrays nativos e não reflete um ambiente de produção real.
+### Seed via script TypeScript
 
-### Seed: seed.json carregado via script TypeScript
+`data/seed.json` é carregado por `prisma/seed.ts` na inicialização. O script tenta múltiplos caminhos para o arquivo, funcionando tanto no Docker local quanto no Render (onde o contexto é apenas a pasta `backend/`).
 
-O arquivo `data/seed.json` é lido pelo script `prisma/seed.ts` na inicialização do container. A decisão foi manter os dados de seed separados do código para facilitar a substituição por dados reais no futuro. O script tenta múltiplos caminhos para localizar o arquivo, funcionando tanto no Docker local quanto no Render.
+### Frontend: Next.js 14 App Router + Tailwind + shadcn/ui
 
-### Frontend: Next.js 14 App Router + Tailwind CSS + shadcn/ui
-
-Next.js foi requisito do desafio. App Router permite colocação de layouts por segmento de rota, o que simplificou a proteção de rotas autenticadas via layout wrapper. Tailwind CSS foi requisito. shadcn/ui foi usado como diferencial solicitado no desafio.
+App Router simplificou proteção de rotas via layout wrapper. shadcn/ui foi implementado com Button, Card, Badge, Input, Label e Select — os componentes mais visíveis da interface.
 
 ### Proxy de API via Next.js rewrites
 
-O frontend não chama o backend diretamente pelo IP/porta. As chamadas vão para `/api/*` e o Next.js proxia internamente para o backend. Isso elimina CORS e não expõe a URL do backend no bundle JavaScript.
+Chamadas vão para `/api/*` e o Next.js proxia para o backend. Elimina CORS e não expõe a URL do backend no bundle JavaScript.
 
-### Mapa de calor: Leaflet + OpenStreetMap (gratuito)
+### Mapa de calor: Leaflet via CDN
 
-Implementado sem chave de API. O Leaflet é carregado via CDN para evitar problemas de bundling com o webpack do Next.js. Os polígonos dos bairros são aproximados e cobrem os 15 bairros presentes no seed.
+Leaflet carregado como script CDN para evitar conflitos com o webpack do Next.js. Polígonos dos bairros aproximados cobrindo os 15 bairros do seed.
 
 ### Autenticação: JWT em localStorage
 
-JWT com expiração de 8h. A escolha por localStorage foi pragmática para o escopo do desafio.
-
-**Em produção:** usaria `httpOnly cookies` para proteção contra XSS, com endpoint de refresh token para renovação automática sem re-login.
-
-### Campo `temAlerta` desnormalizado
-
-Cada tabela de área tem um campo booleano `temAlerta` calculado no momento do seed. Isso evita queries complexas a cada requisição e simplifica os filtros.
+JWT com expiração de 8h. **Em produção:** `httpOnly cookies` + refresh token.
 
 ### Dois Dockerfiles no backend
 
-`Dockerfile` é usado pelo `docker compose` local — acessa `data/seed.json` na raiz do repositório. `Dockerfile.render` é usado pelo Render — o contexto é apenas a pasta `backend/`, então o `seed.json` foi copiado para dentro dela.
+`Dockerfile` para Docker Compose local (acessa `data/seed.json` na raiz). `Dockerfile.render` para o Render (contexto é apenas `backend/`, seed copiado internamente).
+
+### Testes E2E com storageState
+
+O Playwright faz login uma vez via `global.setup.ts` e salva o token no `storageState`. Todos os specs reutilizam esse estado, tornando a suite mais rápida e eliminando falhas por timeout de login no mobile.
 
 ---
 
@@ -271,20 +298,20 @@ Cada tabela de área tem um campo booleano `temAlerta` calculado no momento do s
 | Backend | Render (Free) | https://painel-prefeitura.onrender.com |
 | Banco | Render PostgreSQL (Free) | — |
 
-O deploy é automático: qualquer push na branch `main` dispara redeploy na Vercel e no Render.
+Deploy automático a cada push na branch `main`.
 
 ---
 
 ## O que faria diferente com mais tempo
 
-**Segurança:** substituiria o localStorage por `httpOnly cookies` para o JWT, eliminando a superfície de ataque XSS. Adicionaria refresh token para renovação automática da sessão sem re-login.
+**Segurança:** `httpOnly cookies` para o JWT + refresh token para renovação automática sem re-login.
 
-**Performance:** adicionaria cache com Redis para o endpoint `/summary`, que agrega múltiplas queries. O plano gratuito do Render adormece após inatividade — em produção usaria um plano pago ou configuraria um ping periódico para manter o serviço ativo.
+**Performance:** Redis para cache do `/summary`. Plano pago no Render para eliminar o cold start de 60 segundos.
 
-**PWA:** para técnicos de campo que trabalham em áreas com conexão instável, um service worker com cache offline permitiria consultar os dados sem internet e sincronizar as revisões ao reconectar.
+**Mapa:** GeoJSON oficial dos bairros do Rio (dados.rio) em vez dos polígonos aproximados, cobrindo todos os bairros com precisão geográfica real.
 
-**Mapa:** substituiria os polígonos aproximados por GeoJSON oficial dos bairros do Rio de Janeiro (disponível em dados.rio), cobrindo todos os bairros com precisão.
+**PWA:** service worker para acesso offline em campo e sincronização ao reconectar — especialmente útil para técnicos em áreas com conexão instável.
 
-**Testes:** expandiria a cobertura E2E para incluir cenários de erro de rede, sessão expirada e casos-limite do seed (crianças sem dados em nenhuma área).
+**RBAC:** perfis distintos (técnico, supervisor, admin) com permissões diferentes — supervisores veriam todos os casos, técnicos apenas os da sua região.
 
-**RBAC:** diferentes perfis (técnico, supervisor, admin) com permissões distintas — supervisores veriam todos os casos, técnicos apenas os da sua região.
+**Testes:** expandir cobertura E2E para cenários de erro de rede e sessão expirada.

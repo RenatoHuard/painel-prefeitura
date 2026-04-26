@@ -31,3 +31,4 @@ postgres_data/
 
 # Prisma
 backend/prisma/generated/
+frontend/e2e/.auth/

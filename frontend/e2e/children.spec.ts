@@ -1,12 +1,10 @@
 import { test, expect } from '@playwright/test'
-import { doLogin } from './helpers'
+import { selectRadix } from './helpers'
 
 test.describe('Lista de Crianças', () => {
   test.beforeEach(async ({ page }) => {
-    await doLogin(page)
-    await page.waitForURL('/dashboard')
     await page.goto('/children')
-    await expect(page.getByRole('heading', { name: 'Crianças Acompanhadas' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Crianças Acompanhadas' })).toBeVisible({ timeout: 10000 })
   })
 
   test('exibe a lista de crianças', async ({ page }) => {
@@ -14,12 +12,12 @@ test.describe('Lista de Crianças', () => {
   })
 
   test('filtra por bairro', async ({ page }) => {
-    await page.getByLabel('Bairro').selectOption('Madureira')
+    await selectRadix(page, 'Bairro', 'Madureira')
     await expect(page.getByText(/encontrada/)).toBeVisible()
   })
 
   test('filtra por alertas ativos', async ({ page }) => {
-    await page.getByLabel('Alertas').selectOption('true')
+    await selectRadix(page, 'Alertas', 'Com alertas ativos')
     await expect(page.getByText(/encontrada/)).toBeVisible()
   })
 
@@ -30,25 +28,21 @@ test.describe('Lista de Crianças', () => {
   })
 
   test('limpar filtros reseta a lista', async ({ page }) => {
-    await page.getByLabel('Bairro').selectOption('Madureira')
+    await selectRadix(page, 'Bairro', 'Madureira')
     await page.getByText('Limpar').click()
-    await expect(page.getByLabel('Bairro')).toHaveValue('todos')
+    await expect(page.getByRole('combobox', { name: 'Bairro' })).toContainText('Todos os bairros')
   })
 })
 
 test.describe('Detalhe e Revisão', () => {
   test.beforeEach(async ({ page }) => {
-    await doLogin(page)
-    await page.waitForURL('/dashboard')
     await page.goto('/children')
-    await expect(page.getByRole('heading', { name: 'Crianças Acompanhadas' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Crianças Acompanhadas' })).toBeVisible({ timeout: 10000 })
   })
 
   test('abre o detalhe da criança ao clicar no card', async ({ page }) => {
     await page.locator('a[href^="/children/"]').first().click()
-    // Aguarda navegar para página de detalhe
     await expect(page).toHaveURL(/\/children\/c/)
-    // Verifica os títulos das seções usando heading
     await expect(page.getByRole('heading', { name: 'Saúde' })).toBeVisible()
     await expect(page.getByRole('heading', { name: 'Educação' })).toBeVisible()
     await expect(page.getByRole('heading', { name: 'Assist. Social' })).toBeVisible()

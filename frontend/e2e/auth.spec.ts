@@ -1,18 +1,19 @@
 import { test, expect } from '@playwright/test'
 import { doLogin } from './helpers'
 
+// Auth spec não usa storageState — testa o fluxo de login em si
 test.describe('Autenticação', () => {
-  test.beforeEach(async ({ page }) => {
-    await page.goto('/login')
-  })
+  test.use({ storageState: { cookies: [], origins: [] } }) // limpa o estado para testar login
 
   test('exibe a tela de login', async ({ page }) => {
+    await page.goto('/login')
     await expect(page.getByText('Acesso Restrito')).toBeVisible()
     await expect(page.getByLabel('E-mail funcional')).toBeVisible()
     await expect(page.locator('#password')).toBeVisible()
   })
 
   test('mostra erro com credenciais inválidas', async ({ page }) => {
+    await page.goto('/login')
     await page.getByLabel('E-mail funcional').fill('errado@prefeitura.rio')
     await page.locator('#password').fill('senhaerrada')
     await page.getByRole('button', { name: 'Entrar' }).click()
@@ -22,7 +23,6 @@ test.describe('Autenticação', () => {
   test('faz login com credenciais corretas e redireciona ao dashboard', async ({ page }) => {
     await doLogin(page)
     await expect(page).toHaveURL('/dashboard')
-    // Usa heading para evitar conflito com item de nav
     await expect(page.getByRole('heading', { name: 'Painel Geral' })).toBeVisible()
   })
 
