@@ -83,7 +83,7 @@ export default function LoginPage() {
                 <div className="space-y-1.5">
                   <label htmlFor="email" className="text-sm font-medium text-gray-700 dark:text-gray-300">E-mail funcional</label>
                   <input
-                    id="email" type="email" value={email}
+                    id="email" type="email" value={email} autoComplete="username"
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="tecnico@prefeitura.rio"
                     className="w-full px-3 py-2.5 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-600 disabled:opacity-50 transition-all"
@@ -95,7 +95,7 @@ export default function LoginPage() {
                   <label htmlFor="password" className="text-sm font-medium text-gray-700 dark:text-gray-300">Senha</label>
                   <div className="relative">
                     <input
-                      id="password" type={showPassword ? 'text' : 'password'} value={password}
+                      id="password" type={showPassword ? 'text' : 'password'} value={password} autoComplete="current-password"
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="••••••••"
                       className="w-full px-3 py-2.5 pr-10 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-600 disabled:opacity-50 transition-all"
