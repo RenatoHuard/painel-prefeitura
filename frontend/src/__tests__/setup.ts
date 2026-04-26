@@ -1,5 +1,13 @@
 import '@testing-library/jest-dom'
 
+// Polyfill para hasPointerCapture — jsdom não suporta, Radix UI precisa
+window.HTMLElement.prototype.hasPointerCapture = vi.fn()
+window.HTMLElement.prototype.setPointerCapture = vi.fn()
+window.HTMLElement.prototype.releasePointerCapture = vi.fn()
+
+// Polyfill para scrollIntoView — jsdom não suporta
+window.HTMLElement.prototype.scrollIntoView = vi.fn()
+
 // Mock next/navigation
 vi.mock('next/navigation', () => ({
   useRouter: () => ({

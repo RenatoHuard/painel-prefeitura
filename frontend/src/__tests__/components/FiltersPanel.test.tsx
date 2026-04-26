@@ -1,4 +1,5 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { FiltersPanel } from '@/components/children/FiltersPanel'
 import type { Filters } from '@/types'
 
@@ -22,19 +23,26 @@ describe('FiltersPanel', () => {
     expect(screen.getByLabelText('Revisão')).toBeInTheDocument()
   })
 
-  it('chama onFilterChange ao mudar bairro', () => {
+  it('chama onFilterChange ao mudar bairro', async () => {
+    const user = userEvent.setup()
     const onFilterChange = vi.fn()
     render(<FiltersPanel filters={defaultFilters} onFilterChange={onFilterChange} />)
 
-    fireEvent.change(screen.getByLabelText('Bairro'), { target: { value: 'Madureira' } })
+    // Abre o Select de Bairro e seleciona Madureira
+    await user.click(screen.getByLabelText('Bairro'))
+    await user.click(screen.getByRole('option', { name: 'Madureira' }))
+
     expect(onFilterChange).toHaveBeenCalledWith({ bairro: 'Madureira' })
   })
 
-  it('chama onFilterChange com semDados=true ao selecionar "Sem dados cadastrados"', () => {
+  it('chama onFilterChange com semDados=true ao selecionar "Sem dados cadastrados"', async () => {
+    const user = userEvent.setup()
     const onFilterChange = vi.fn()
     render(<FiltersPanel filters={defaultFilters} onFilterChange={onFilterChange} />)
 
-    fireEvent.change(screen.getByLabelText('Alertas'), { target: { value: 'semDados' } })
+    await user.click(screen.getByLabelText('Alertas'))
+    await user.click(screen.getByRole('option', { name: /sem dados cadastrados/i }))
+
     expect(onFilterChange).toHaveBeenCalledWith({
       semDados: 'true',
       alertas: 'todos',
