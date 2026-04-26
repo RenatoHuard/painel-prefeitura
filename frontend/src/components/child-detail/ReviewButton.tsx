@@ -3,6 +3,8 @@
 import { useState } from 'react'
 import { reviewChild } from '@/lib/api'
 import { CheckCircle2, Loader2, ClipboardCheck } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 
 interface Props {
   childId: string
@@ -30,54 +32,59 @@ export function ReviewButton({ childId, onReviewed }: Props) {
   }
 
   return (
-    <div className="bg-card border border-border rounded-xl p-5">
-      <div className="flex items-center gap-3 mb-3">
-        <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
-          <ClipboardCheck className="w-4 h-4 text-primary" />
+    <Card>
+      <CardHeader className="pb-3">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+            <ClipboardCheck className="w-4 h-4 text-primary" aria-hidden="true" />
+          </div>
+          <div>
+            <CardTitle className="text-base">Registrar Revisão</CardTitle>
+            <CardDescription>
+              Confirma que o caso foi analisado e o acompanhamento está sendo realizado
+            </CardDescription>
+          </div>
         </div>
-        <div>
-          <h2 className="font-semibold text-card-foreground">Registrar Revisão</h2>
-          <p className="text-xs text-muted-foreground">
-            Confirma que o caso foi analisado e o acompanhamento está sendo realizado
-          </p>
-        </div>
-      </div>
-
-      {error && (
-        <div className="mb-3 px-3 py-2 rounded-md bg-destructive/10 border border-destructive/20 text-destructive text-sm">
-          {error}
-        </div>
-      )}
-
-      {success && (
-        <div
-          role="status"
-          aria-live="polite"
-          className="mb-3 px-3 py-2 rounded-md bg-green-500/10 border border-green-500/20 text-green-600 dark:text-green-400 text-sm flex items-center gap-2"
-        >
-          <CheckCircle2 className="w-4 h-4" />
-          Revisão registrada com sucesso!
-        </div>
-      )}
-
-      <button
-        onClick={handleReview}
-        disabled={loading}
-        className="flex items-center gap-2 px-4 py-2.5 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-        aria-label="Marcar caso como revisado"
-      >
-        {loading ? (
-          <>
-            <Loader2 className="w-4 h-4 animate-spin" />
-            Registrando...
-          </>
-        ) : (
-          <>
-            <CheckCircle2 className="w-4 h-4" />
-            Marcar como Revisado
-          </>
+      </CardHeader>
+      <CardContent>
+        {error && (
+          <div
+            role="alert"
+            className="mb-3 px-3 py-2 rounded-md bg-destructive/10 border border-destructive/20 text-destructive text-sm"
+          >
+            {error}
+          </div>
         )}
-      </button>
-    </div>
+
+        {success && (
+          <div
+            role="status"
+            aria-live="polite"
+            className="mb-3 px-3 py-2 rounded-md bg-green-500/10 border border-green-500/20 text-green-600 dark:text-green-400 text-sm flex items-center gap-2"
+          >
+            <CheckCircle2 className="w-4 h-4" aria-hidden="true" />
+            Revisão registrada com sucesso!
+          </div>
+        )}
+
+        <Button
+          onClick={handleReview}
+          disabled={loading}
+          aria-label="Marcar caso como revisado"
+        >
+          {loading ? (
+            <>
+              <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />
+              Registrando...
+            </>
+          ) : (
+            <>
+              <CheckCircle2 className="w-4 h-4" aria-hidden="true" />
+              Marcar como Revisado
+            </>
+          )}
+        </Button>
+      </CardContent>
+    </Card>
   )
 }
