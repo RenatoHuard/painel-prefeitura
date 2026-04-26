@@ -58,22 +58,41 @@
   }
 }
 
-/* Scrollbar customization */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+/* Skip to main content — acessibilidade por teclado */
+.skip-link {
+  position: absolute;
+  top: -100%;
+  left: 0;
+  z-index: 9999;
+  padding: 0.75rem 1.5rem;
+  background: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+  font-weight: 600;
+  font-size: 0.875rem;
+  border-radius: 0 0 0.5rem 0;
+  text-decoration: none;
+  transition: top 0.1s;
 }
-::-webkit-scrollbar-track {
-  @apply bg-muted;
-}
-::-webkit-scrollbar-thumb {
-  @apply bg-muted-foreground/30 rounded-full;
-}
-::-webkit-scrollbar-thumb:hover {
-  @apply bg-muted-foreground/50;
+.skip-link:focus {
+  top: 0;
+  outline: 3px solid hsl(var(--ring));
+  outline-offset: 2px;
 }
 
-/* Leaflet map overrides */
+/* Focus visible global — garante anel de foco em todos os elementos */
+:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { @apply bg-muted; }
+::-webkit-scrollbar-thumb { @apply bg-muted-foreground/30 rounded-full; }
+::-webkit-scrollbar-thumb:hover { @apply bg-muted-foreground/50; }
+
+/* Leaflet */
 .leaflet-container {
   background: hsl(var(--muted));
   font-family: inherit;
@@ -94,7 +113,4 @@
   color: #f1f5f9 !important;
   border-radius: 6px !important;
   box-shadow: 0 4px 12px rgba(0,0,0,0.4) !important;
-}
-.leaflet-tooltip::before {
-  border-top-color: #334155 !important;
 }
